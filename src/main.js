@@ -2,8 +2,10 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import store from './store'
-import installElementPlus from './plugins/element'
 
-const app = createApp(App)
-installElementPlus(app)
-app.use(store).use(router).mount('#app')
+
+import 'bootstrap/dist/css/bootstrap.min.css'
+import 'bootstrap/dist/js/bootstrap.bundle.min.js'
+
+
+createApp(App).use(store).use(router).mount('#app')

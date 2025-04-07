@@ -2,7 +2,7 @@
 
     <div class="row  bg-primary text-white">
         <div class="col text-center py-2">
-            用户登录
+            用户注册
         </div>
     </div>
 
@@ -26,7 +26,7 @@
 import Content from '@/components/ContentBase.vue';
 
 export default {
-    name: "LoginView",
+    name: "RegisterView",
     components: {
         Content,
     }
