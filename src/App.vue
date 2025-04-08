@@ -1,5 +1,4 @@
 <template>
-
   <router-view />
   <NavBar class="fixed-bottom" />
 
@@ -13,7 +12,6 @@ export default {
     NavBar,
   }
 }
-
 
 </script>
 

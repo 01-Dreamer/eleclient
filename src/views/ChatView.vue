@@ -1,7 +1,7 @@
 <template>
     
     <Content>
-        首页
+        消息
     </Content>
     
 </template>
@@ -11,7 +11,7 @@
 import Content from '@/components/ContentBase.vue';
 
 export default {
-    name: "HomeView",
+    name: "ChatView",
     components: {
         Content,
     }
