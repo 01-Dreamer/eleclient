@@ -19,7 +19,8 @@
             <label class="input-group-text" for="captchaInput">验证码</label>
             <input type="text" class="form-control" id="captchaInput" placeholder="请输入验证码..." required>
             <img :src="captchaImage" alt="加载中..." class="img-fluid"
-                style="height: 38px; object-fit: contain; width: auto;">
+                style="height: 38px; object-fit: contain; width: auto;"
+                @click="refreshCaptcha">
         </div>
         <button type="button" class="btn btn-success w-100 mb-3">登录</button>
         <router-link class="btn btn-outline-secondary w-100" :to="{ name: 'register' }">去注册</router-link>
@@ -31,8 +32,8 @@
 <script>
 import Content from '@/components/ContentBase.vue';
 import store from '@/store';
-import { ref } from 'vue'
-import $ from 'jquery'
+import { ref } from 'vue';
+import $ from 'jquery';
 
 export default {
     name: "LoginView",
@@ -42,14 +43,13 @@ export default {
 
     setup() {
 
-        const captchaImage = ref('');
         // 获取验证码
-        if (!store.state.is_login) {
+        const captchaImage = ref('');
+        const refreshCaptcha = () => {
             $.ajax({
                 url: 'https://data.zxylearn.top/captcha',
                 type: 'GET',
                 success: (response) => {
-                    console.log(response.captchaBase64);
                     captchaImage.value = 'data:image/png;base64,' + response.captchaBase64;
                 },
                 error: (error) => {
@@ -58,8 +58,11 @@ export default {
             });
         }
 
+        if (!store.state.is_login) refreshCaptcha();
+
         return {
             captchaImage,
+            refreshCaptcha,
         }
 
     }
