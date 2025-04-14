@@ -4,7 +4,7 @@ export default createStore({
   state: {
     userId: -1,
     email: "",
-    is_login: false,
+    is_login: true,
     access_token: "",
     refresh_token: "",
   },

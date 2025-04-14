@@ -5,15 +5,11 @@ import store from '@/store';
 import HomeView from '@/views/HomeView.vue';
 import LoginView from '@/views/LoginView.vue';
 import RegisterView from '@/views/RegisterView.vue';
+import FoundView from '@/views/FoundView.vue';
+import ChatView from '@/views/ChatView.vue';
+import MineView from '@/views/MineView.vue';
 
 const routes = [
-  
-  {
-    path: '/',
-    name: 'home',
-    component: HomeView,
-    meta: { requiresAuth: true }
-  },
   {
     path: '/login',
     name: 'login',
@@ -26,6 +22,31 @@ const routes = [
     component: RegisterView,
     meta: { guestOnly: true }
   },
+  {
+    path: '/',
+    name: 'home',
+    component: HomeView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/found',
+    name: 'found',
+    component: FoundView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/chat',
+    name: 'chat',
+    component: ChatView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/mine',
+    name: 'mine',
+    component: MineView,
+    meta: { requiresAuth: true }
+  },
+
 
 
 ]
