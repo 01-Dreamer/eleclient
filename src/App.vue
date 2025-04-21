@@ -1,6 +1,7 @@
 <template>
-  <router-view />
   <NavBar class="fixed-bottom" />
+  <router-view />
+  
 
 </template>
 

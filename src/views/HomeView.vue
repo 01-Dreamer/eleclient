@@ -1,6 +1,6 @@
 <template>
     <div class="container-fluid px-0 text-white bg-primary">
-        <div class="row row-cols-1">
+        <div class="row row-cols-1 mx-0">
             <div class="col" style="height:50px">
                 <div style="margin-top:10px;margin-left:10px">
                     <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor"

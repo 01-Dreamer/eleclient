@@ -1,6 +1,6 @@
 <template>
 
-    <div class="row  bg-primary text-white">
+    <div class="row  bg-primary text-white mx-0">
         <div class="col text-center py-2">
             用户注册
         </div>

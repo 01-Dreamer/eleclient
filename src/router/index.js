@@ -8,6 +8,8 @@ import RegisterView from '@/views/RegisterView.vue';
 import FoundView from '@/views/FoundView.vue';
 import ChatView from '@/views/ChatView.vue';
 import MineView from '@/views/MineView.vue';
+import BusinessView from '@/views/BusinessView.vue';
+import TestView from '@/views/TestView.vue';
 
 const routes = [
   {
@@ -44,6 +46,24 @@ const routes = [
     path: '/mine',
     name: 'mine',
     component: MineView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/business/:user_id',
+    name: 'business',
+    component: BusinessView,
+    meta: { requiresAuth: true }
+  },
+
+
+
+  
+
+  
+  {
+    path: '/test',
+    name: 'test',
+    component: TestView,
     meta: { requiresAuth: true }
   },
 

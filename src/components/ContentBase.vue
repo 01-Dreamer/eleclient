@@ -23,4 +23,9 @@ export default {
 
 
 <style scoped>
+
+.container-fluid {
+    margin-bottom: 50px;
+}
+
 </style>
