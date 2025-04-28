@@ -2,12 +2,23 @@
 
     <div class="row  bg-primary text-white d-flex align-items-center mx-0" style="height:40px">
         <div class="col text-center">
-            商家界面
+            商家信息
         </div>
     </div>
 
     <Content>
-        商家id: {{ user_id }}
+        <div class="d-flex justify-content-center">
+            <img src="/img/img/sj01.png" alt="Error-Img">
+        </div>
+        <div class="d-flex justify-content-center">
+            <strong>万家饺子（软件园E18店）</strong>
+        </div>
+        <div class="d-flex justify-content-center">
+            ¥15起送 | ¥3配送
+        </div>
+        <div class="d-flex justify-content-center">
+            各种饺子炒菜
+        </div>
     </Content>
 
 </template>
