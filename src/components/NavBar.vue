@@ -1,5 +1,4 @@
 <template>
-
     <ul class="nav">
         <router-link class="link" :to="{ name: 'home' }">
             <li>
@@ -26,16 +25,13 @@
             </li>
         </router-link>
     </ul>
-
 </template>
 
 
 <script>
-
 export default {
     name: "NavBar"
 }
-
 </script>
 
 

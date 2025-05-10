@@ -66,17 +66,17 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const isLogin = store.state.is_login;
+  const is_login = store.state.is_login;
 
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (!isLogin) {
+    if (!is_login) {
       next('/login');
     } else {
       next();
     }
   }
   else if (to.matched.some(record => record.meta.guestOnly)) {
-    if (isLogin) {
+    if (is_login) {
       next('/');
     } else {
       next();
