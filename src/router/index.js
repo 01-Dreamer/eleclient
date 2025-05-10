@@ -1,17 +1,16 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHistory } from 'vue-router'
 import store from '@/store';
 
-
-import HomeView from '@/views/HomeView.vue';
-import LoginView from '@/views/LoginView.vue';
-import RegisterView from '@/views/RegisterView.vue';
-import FoundView from '@/views/FoundView.vue';
-import ChatView from '@/views/ChatView.vue';
-import MineView from '@/views/MineView.vue';
-import BusinessView from '@/views/BusinessView.vue';
-import TestView from '@/views/TestView.vue';
+import LoginView from '../views/LoginView.vue'
+import RegisterView from '../views/RegisterView.vue'
+import HomeView from '../views/HomeView.vue'
+import FoundView from '../views/FoundView.vue'
+import OrderView from '../views/OrderView.vue'
+import MineView from '../views/MineView.vue'
+import TestView from '../views/TestView.vue'
 
 const routes = [
+
   {
     path: '/login',
     name: 'login',
@@ -37,9 +36,9 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/chat',
-    name: 'chat',
-    component: ChatView,
+    path: '/order',
+    name: 'order',
+    component: OrderView,
     meta: { requiresAuth: true }
   },
   {
@@ -48,24 +47,15 @@ const routes = [
     component: MineView,
     meta: { requiresAuth: true }
   },
-  {
-    path: '/business/:user_id',
-    name: 'business',
-    component: BusinessView,
-    meta: { requiresAuth: true }
-  },
 
 
 
-  
-  
   {
     path: '/test',
     name: 'test',
     component: TestView,
     meta: { requiresAuth: true }
-  },
-
+  }
 
 
 ]
@@ -74,7 +64,6 @@ const router = createRouter({
   history: createWebHistory(),
   routes
 })
-
 
 router.beforeEach((to, from, next) => {
   const isLogin = store.state.is_login;
@@ -97,6 +86,5 @@ router.beforeEach((to, from, next) => {
     next();
   }
 });
-
 
 export default router

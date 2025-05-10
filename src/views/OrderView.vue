@@ -1,11 +1,11 @@
 <template>
-    Found
+    Order
 </template>
 
 
 <script>
 export default {
-    name: "FoundView",
+    name: "OrderView",
 }
 </script>
 

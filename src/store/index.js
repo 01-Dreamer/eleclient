@@ -3,9 +3,10 @@ import { createStore } from 'vuex'
 export default createStore({
   state: {
     user_id: -1,
-    is_login: true,
+    email: "",
     access_token: "",
     refresh_token: "",
+    is_login: true,
   },
   getters: {
   },
