@@ -47,6 +47,7 @@ export default {
     align-items: center;
 
     padding-left: 0;
+    margin-bottom: 0;
 }
 
 .nav .link {
