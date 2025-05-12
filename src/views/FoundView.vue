@@ -1,7 +1,7 @@
 <template>
-  <header>
-    <p>商家列表</p>
-  </header>
+  <HeaderBase>
+    商家列表
+  </HeaderBase>
 
   <ul class="business-list">
     <li v-for="business in businesses" :key="business.id" @click="clickBusiness(business.id)">
@@ -21,15 +21,20 @@
 
 
 <script>
+import HeaderBase from '@/components/HeaderBase.vue';
 import router from '@/router'
 import {ref} from 'vue'
 
 export default {
   name: "FoundView",
 
+  components: {
+    HeaderBase,
+  },
+
   setup() {
 
-    const businesses = ref([
+    const businesses = [
       {
         id: 1,
         chat_quantity: ref(3),
@@ -93,25 +98,27 @@ export default {
         business_name: '满园春饼（全运路店）',
         business_description: '各种春饼',
       },
-    ])
+    ]
 
     const updateChatQuantity = (id, newChatQuantity) => {
-      const business = businesses.value.find(item => item.id === id)
+      const business = businesses.find(item => item.id === id)
       if (business) {
         business.chat_quantity.value = newChatQuantity;
       } else {
-        console.warn(`not_found business:${id}`);
+        console.warn(`not found business:${id}`);
       }
     };
 
     const clickBusiness = (id) => {
       updateChatQuantity(id, 0);
+
       router.push({
         name: "business",
         params: {
           id
         }
       })
+
     };
 
 
@@ -126,23 +133,6 @@ export default {
 
 
 <style scoped>
-header {
-  width: 100%;
-  height: 12vw;
-  background-color: #0097FF;
-  color: #FFF;
-  font-size: 4.8vw;
-
-  position: fixed;
-  left: 0;
-  top: 0;
-  z-index: 1000;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
 .business-list {
   width: 100%;
   margin-top: 12vw;

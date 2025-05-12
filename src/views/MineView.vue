@@ -1,13 +1,20 @@
 <template>
+  <HeaderBase>
+    我的信息
+  </HeaderBase>
 
-    Mine
-    
 </template>
 
 
 <script>
+import HeaderBase from "@/components/HeaderBase.vue";
+
 export default {
-    name: "MineView",
+  name: "MineView",
+
+  components: {
+    HeaderBase,
+  }
 }
 </script>
 

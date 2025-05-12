@@ -65,7 +65,7 @@ const routes = [
     path: '/test',
     name: 'test',
     component: TestView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: false }
   }
 
 

@@ -6,7 +6,7 @@ export default createStore({
     email: "",
     access_token: "",
     refresh_token: "",
-    is_login: true,
+    is_login: false,
   },
   getters: {
   },
