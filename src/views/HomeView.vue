@@ -141,7 +141,6 @@
     </li>
   </ul>
 
-
 </template>
 
 
@@ -175,7 +174,7 @@ export default {
       } else if (type === "sales") {
         console.log("sales");
       } else {
-        console.log("sort_error");
+        console.warm("sort_error");
       }
     };
 
@@ -202,10 +201,11 @@ header {
 }
 
 .location-icon {
-  font-size: 6vw;
+  font-size: 10vw;
   color: #FFF;
 
   margin-left: 4vw;
+  margin-top: 1vw;
 }
 
 .location-text {
@@ -229,6 +229,8 @@ header {
   display: flex;
   justify-content: center;
   align-items: center;
+
+  padding-top: 2vw;
 }
 
 .foodtype {

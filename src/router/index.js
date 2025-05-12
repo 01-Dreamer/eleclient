@@ -7,6 +7,9 @@ import HomeView from '../views/HomeView.vue'
 import FoundView from '../views/FoundView.vue'
 import OrderView from '../views/OrderView.vue'
 import MineView from '../views/MineView.vue'
+import BusinessView from '../views/BusinessView.vue'
+
+
 import TestView from '../views/TestView.vue'
 
 const routes = [
@@ -47,6 +50,14 @@ const routes = [
     component: MineView,
     meta: { requiresAuth: true }
   },
+  {
+    path: '/business/:id',
+    name: 'business',
+    component: BusinessView,
+    meta: { requiresAuth: true }
+  },
+
+
 
 
 
