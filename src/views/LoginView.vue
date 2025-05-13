@@ -30,8 +30,9 @@
 
 <script>
 import HeaderBase from "@/components/HeaderBase.vue";
-import {ElNotification} from "element-plus";
-import {ref} from 'vue'
+//import { ElNotification } from "element-plus";
+import $ from 'jquery';
+import { ref } from 'vue';
 
 
 export default {
@@ -47,10 +48,33 @@ export default {
     const password = ref('');
     const captcha_text = ref('');
 
+
+    const login = () => {
+      const loginData = {
+        email: email.value,
+        password: password.value
+      };
+
+      $.ajax({
+        url: 'http://localhost:12345/login',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(loginData),
+        success: (response) => {
+          console.log(response);
+        },
+        error: (error) => {
+          console.error(error);
+        }
+      });
+    }
+
     const handleLogin = () => {
 
-      ElNotification({
+      login();
 
+      /*ElNotification({
+ 
         title: '成功',
         message: '登录成功！',
         type: 'success',
@@ -58,7 +82,7 @@ export default {
         center: true,
         showClose: true,
       });
-
+      */
     }
 
     return {
