@@ -12,8 +12,8 @@
     </el-form-item>
     <el-form-item class="input-form" label="验证码:">
       <div class="captcha-content">
-        <el-input class="captcha-text" v-model="captcha_text" placeholder="请输入验证码..."></el-input>
-        <img class="captcha-img" src="../img/captcha.png">
+        <el-input class="captcha-text" v-model="captcha_img_text" placeholder="请输入验证码..."></el-input>
+        <img class="captcha-img" :src="captcha_img_url" @click="getCaptchaImg">
       </div>
     </el-form-item>
   </div>
@@ -21,7 +21,7 @@
   <div class="button-group">
     <el-button class="login-btn" type="primary" @click="handleLogin">登录</el-button>
     <router-link :to="{ name: 'register' }">
-      <el-button class="register-btn">注册</el-button>
+      <el-button class="register-btn">去注册</el-button>
     </router-link>
   </div>
 
@@ -31,6 +31,7 @@
 <script>
 import HeaderBase from "@/components/HeaderBase.vue";
 //import { ElNotification } from "element-plus";
+import store from '@/store';
 import $ from 'jquery';
 import { ref } from 'vue';
 
@@ -46,7 +47,8 @@ export default {
 
     const email = ref('');
     const password = ref('');
-    const captcha_text = ref('');
+    const captcha_img_text = ref('');
+    const captcha_img_url = ref('');
 
 
     const login = () => {
@@ -67,7 +69,28 @@ export default {
           console.error(error);
         }
       });
-    }
+    };
+
+    const getCaptchaImg = () => {
+      $.ajax({
+        url: 'http://localhost:12345/captchaImg',
+        type: 'GET',
+        xhrFields: {
+          responseType: 'blob'
+        },
+        success: (blob, status, xhr) => {
+          captcha_img_url.value = URL.createObjectURL(blob);
+
+          const captcha_img_Id = xhr.getResponseHeader("imgCaptchaId");
+          console.log("captcha_img_Id:", captcha_img_Id);
+        },
+        error: (error) => {
+          console.error('failed to get captcha image:', error);
+        }
+      });
+    };
+
+    if (!store.state.is_login) getCaptchaImg();
 
     const handleLogin = () => {
 
@@ -83,12 +106,15 @@ export default {
         showClose: true,
       });
       */
-    }
+    };
 
     return {
       email,
       password,
-      captcha_text,
+      captcha_img_text,
+      captcha_img_url,
+
+      getCaptchaImg,
       handleLogin,
     }
   },
@@ -131,13 +157,13 @@ export default {
 
 .button-group .login-btn {
   width: 100%;
-
+  cursor: pointer;
   margin-left: 0;
 }
 
 .button-group .register-btn {
   width: 100%;
-
+  cursor: pointer;
   margin-left: 0;
   margin-top: 2vw;
 }

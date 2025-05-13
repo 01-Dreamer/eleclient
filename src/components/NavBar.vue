@@ -40,7 +40,7 @@ export default {
     width: 100%;
     height: 14vw;
     border-top: solid 1px #DDD;
-    background-color: #fff;
+    background-color: #FFF;
 
     display: flex;
     justify-content: space-around;

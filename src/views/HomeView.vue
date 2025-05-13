@@ -174,7 +174,7 @@ export default {
       } else if (type === "sales") {
         console.log("sales");
       } else {
-        console.error("sort_error");
+        console.error("sort error");
       }
     };
 

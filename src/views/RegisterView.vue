@@ -11,16 +11,13 @@
       <el-input v-model="password" show-password placeholder="请输入密码..."></el-input>
     </el-form-item>
     <el-form-item class="input-form" label="确认密码:">
-      <el-input v-model="confirm_password" show-password placeholder="请输入密码..."></el-input>
+      <el-input v-model="confirm_password" show-password placeholder="请确认密码..."></el-input>
     </el-form-item>
     <el-form-item class="input-form" label="验证码:">
       <div class="captcha-content">
-        <el-input class="captcha-text" v-model="captcha_text" placeholder="请输入验证码..."></el-input>
-        <img class="captcha-img" src="../img/captcha.png">
+        <el-input v-model="captcha_email" show-password placeholder="请输入邮箱验证码..."></el-input>
+        <el-button class="captcha-btn" type="primary" @click="getCaptchaEmail">获取验证码</el-button>
       </div>
-    </el-form-item>
-    <el-form-item class="input-form" label="邮箱验证码:">
-      <el-input v-model="email_captcha" show-password placeholder="请输入邮箱验证码..."></el-input>
     </el-form-item>
   </div>
 
@@ -37,7 +34,8 @@
 <script>
 import HeaderBase from "@/components/HeaderBase.vue";
 import {ElNotification} from "element-plus";
-import {ref} from 'vue'
+import $ from 'jquery';
+import {ref} from 'vue';
 
 
 export default {
@@ -52,8 +50,8 @@ export default {
     const email = ref('');
     const password = ref('');
     const confirm_password = ref('')
-    const captcha_text = ref('');
-    const email_captcha = ref('');
+    const captcha_img = ref('');
+    const captcha_email = ref('');
 
     const handleLogin = () => {
 
@@ -67,16 +65,32 @@ export default {
         showClose: true,
       });
 
+    };
+
+    
+    const getCaptchaEmail = () => {
+      $.ajax({
+        url: 'http://localhost:12345/captchaEmail?email=' + email.value,
+        type: 'GET',
+        dataType: 'json',
+        success: (data) => {
+          console.log(data);
+        },
+        error: (error) => {
+          console.error('failed to get captcha email:', error);
+        }
+      });
     }
 
     return {
       email,
       password,
       confirm_password,
-      captcha_text,
-      email_captcha,
+      captcha_img,
+      captcha_email,
 
       handleLogin,
+      getCaptchaEmail,
     }
   },
 }
@@ -105,8 +119,10 @@ export default {
   width: 60%;
 }
 
-.login-input .input-form .captcha-content .captcha-img {
+.login-input .input-form .captcha-content .captcha-btn {
   width: 40%;
+  cursor: pointer;
+  margin-left: 1vw;
 }
 
 .button-group {
@@ -118,13 +134,13 @@ export default {
 
 .button-group .register-btn {
   width: 100%;
-
+  cursor: pointer;
   margin-left: 0;
 }
 
 .button-group .login-btn {
   width: 100%;
-
+  cursor: pointer;
   margin-left: 0;
   margin-top: 2vw;
 }
