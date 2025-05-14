@@ -30,7 +30,7 @@
 
 <script>
 import HeaderBase from "@/components/HeaderBase.vue";
-//import { ElNotification } from "element-plus";
+import { showInfoToUser } from '@/utils/notice';
 import store from '@/store';
 import $ from 'jquery';
 import { ref } from 'vue';
@@ -51,6 +51,7 @@ export default {
     const captcha_img_url = ref('');
 
 
+    /*
     const login = () => {
       const loginData = {
         email: email.value,
@@ -69,8 +70,9 @@ export default {
           console.error(error);
         }
       });
-    };
+    };*/
 
+    // 向后端请求图形验证码
     const getCaptchaImg = () => {
       $.ajax({
         url: 'http://localhost:12345/captchaImg',
@@ -80,7 +82,6 @@ export default {
         },
         success: (blob, status, xhr) => {
           captcha_img_url.value = URL.createObjectURL(blob);
-
           const captcha_img_Id = xhr.getResponseHeader("imgCaptchaId");
           console.log("captcha_img_Id:", captcha_img_Id);
         },
@@ -90,24 +91,25 @@ export default {
       });
     };
 
+    // 第一次进入登录页面自动请求图形验证码
     if (!store.state.is_login) getCaptchaImg();
 
+    // 处理登录
     const handleLogin = () => {
-
-      login();
-
-      /*ElNotification({
- 
-        title: '成功',
-        message: '登录成功！',
-        type: 'success',
-        duration: 1000,
-        center: true,
-        showClose: true,
-      });
-      */
+      if(email.value === '') {
+        showInfoToUser("请输入邮箱", "error");
+      } else if(password.value === '') {
+        showInfoToUser("请输入密码", "error");
+      } else if(captcha_img_text.value === '') {
+        showInfoToUser("请输入验证码", "error");
+      } else {
+        showInfoToUser("登录成功", "success");
+      }
     };
 
+
+
+    
     return {
       email,
       password,

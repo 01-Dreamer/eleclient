@@ -181,6 +181,8 @@ export default {
     return {
       Search,
       search_input,
+
+      
       searchFunction,
       handleSort,
     }

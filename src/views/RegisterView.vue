@@ -16,13 +16,15 @@
     <el-form-item class="input-form" label="验证码:">
       <div class="captcha-content">
         <el-input v-model="captcha_email" show-password placeholder="请输入邮箱验证码..."></el-input>
-        <el-button class="captcha-btn" type="primary" @click="getCaptchaEmail">获取验证码</el-button>
+        <el-button class="captcha-btn" type="primary" @click="getCaptchaEmail" :disabled="disable_btn_countdown > 0">
+          {{ disable_btn_countdown > 0 ? disable_btn_countdown + '秒后重试' : '获取验证码' }}
+        </el-button>
       </div>
     </el-form-item>
   </div>
 
   <div class="button-group">
-    <el-button class="register-btn" type="primary" @click="handleLogin">注册</el-button>
+    <el-button class="register-btn" type="primary" @click="handleRegister">注册</el-button>
     <router-link :to="{ name: 'login' }">
       <el-button class="login-btn">去登录</el-button>
     </router-link>
@@ -33,9 +35,9 @@
 
 <script>
 import HeaderBase from "@/components/HeaderBase.vue";
-import {ElNotification} from "element-plus";
+import { showInfoToUser } from '@/utils/notice';
 import $ from 'jquery';
-import {ref} from 'vue';
+import { ref } from 'vue';
 
 
 export default {
@@ -50,46 +52,97 @@ export default {
     const email = ref('');
     const password = ref('');
     const confirm_password = ref('')
-    const captcha_img = ref('');
     const captcha_email = ref('');
+    const disable_btn_countdown = ref(-1);
 
-    const handleLogin = () => {
+    // 合法密码的正则表达式
+    const isValidPassword = (str) => /^[A-Za-z0-9]{1,20}$/.test(str);
 
-      ElNotification({
+    // 处理注册
+    const handleRegister = () => {
+      if(email.value === '') {
+        showInfoToUser("请输入邮箱", "error");
+      } else if(password.value === '') {
+        showInfoToUser("请输入密码", "error");
+      } else if(!isValidPassword(password.value)) {
+        showInfoToUser("密码只能由 1-20 位字母或数字组成", "error", 1500);
+      } else if(confirm_password.value === '') {
+        showInfoToUser("请确认密码", "error");
+      } else if(password.value != confirm_password.value) {
+        showInfoToUser("两次输入的密码不一致", "error");
+      } else if(captcha_email.value === '') {
+        showInfoToUser("请输入验证码", "error");
+      } else {
+        showInfoToUser("注册成功", "success");
+      }
+    };
 
-        title: '注册',
-        message: '注册成功！',
-        type: 'success',
-        duration: 1000,
-        center: true,
-        showClose: true,
-      });
+    // 处理按钮禁用倒计时
+    let countdownTimer = null;
+    const startCountdown = (wait_time) => {
+      if (countdownTimer) {
+        clearInterval(countdownTimer);
+      }
+
+      disable_btn_countdown.value = wait_time;
+
+      countdownTimer = setInterval(() => {
+        disable_btn_countdown.value--;
+
+        if (disable_btn_countdown.value <= 0) {
+          clearInterval(countdownTimer);
+          countdownTimer = null;
+        }
+      }, 1000);
 
     };
 
-    
+    // 向后端请求邮箱验证码
     const getCaptchaEmail = () => {
       $.ajax({
         url: 'http://localhost:12345/captchaEmail?email=' + email.value,
         type: 'GET',
         dataType: 'json',
         success: (data) => {
-          console.log(data);
+          if(data.error) {
+            console.error(data.error);
+            showInfoToUser("验证码发送失败", "error");
+          }
+          else if (data.wait) {
+            startCountdown(parseInt(data.wait));
+            showInfoToUser("等待" + data.wait + "秒后重试", "warning");
+          }
+          else if(data.emailCaptchaId) {
+            startCountdown(parseInt(180));
+            showInfoToUser("验证码发送成功", "success");
+          }
+          else {
+            console.error("unknown info about captcha email");
+            showInfoToUser("未知错误", "error");
+          }
         },
         error: (error) => {
           console.error('failed to get captcha email:', error);
+          showInfoToUser("服务器无响应", "error");
         }
       });
-    }
+    };
 
+
+
+
+
+
+    
     return {
       email,
       password,
       confirm_password,
-      captcha_img,
       captcha_email,
+      disable_btn_countdown,
 
-      handleLogin,
+
+      handleRegister,
       getCaptchaEmail,
     }
   },
