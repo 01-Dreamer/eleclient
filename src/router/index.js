@@ -27,6 +27,15 @@ const routes = [
     meta: { guestOnly: true }
   },
   {
+    path: '/logout',
+    name: 'logout',
+    meta: { guestOnly: true },
+    beforeEnter: (to, from, next) => {
+    store.dispatch("logout");
+    next('/login');
+    }
+  },
+  {
     path: '/',
     name: 'home',
     component: HomeView,

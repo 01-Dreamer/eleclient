@@ -31,6 +31,7 @@
 <script>
 import HeaderBase from "@/components/HeaderBase.vue";
 import { showInfoToUser } from '@/utils/notice';
+//import router from '@/router/index';
 import store from '@/store';
 import $ from 'jquery';
 import { ref } from 'vue';
@@ -51,28 +52,10 @@ export default {
     const captcha_img_url = ref('');
 
 
-    /*
-    const login = () => {
-      const loginData = {
-        email: email.value,
-        password: password.value
-      };
-
-      $.ajax({
-        url: 'http://localhost:12345/login',
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(loginData),
-        success: (response) => {
-          console.log(response);
-        },
-        error: (error) => {
-          console.error(error);
-        }
-      });
-    };*/
+  
 
     // 向后端请求图形验证码
+    let captcha_img_id = null;
     const getCaptchaImg = () => {
       $.ajax({
         url: 'http://localhost:12345/captchaImg',
@@ -82,8 +65,8 @@ export default {
         },
         success: (blob, status, xhr) => {
           captcha_img_url.value = URL.createObjectURL(blob);
-          const captcha_img_Id = xhr.getResponseHeader("imgCaptchaId");
-          console.log("captcha_img_Id:", captcha_img_Id);
+          captcha_img_id = xhr.getResponseHeader("imgCaptchaId");
+          console.log("captcha_img_Id:", captcha_img_id);
         },
         error: (error) => {
           console.error('failed to get captcha image:', error);
@@ -94,6 +77,29 @@ export default {
     // 第一次进入登录页面自动请求图形验证码
     if (!store.state.is_login) getCaptchaImg();
 
+    const login = () => {
+      const login_data = {
+        email: email.value,
+        password: password.value,
+        captchaImgId: captcha_img_id,
+        captchaImgText: captcha_img_text.value,
+
+      };
+
+      $.ajax({
+        url: 'http://localhost:12345/login',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(login_data),
+        success: (response) => {
+          console.log(response);
+        },
+        error: (error) => {
+          console.error(error);
+        }
+      });
+    };
+
     // 处理登录
     const handleLogin = () => {
       if(email.value === '') {
@@ -103,6 +109,14 @@ export default {
       } else if(captcha_img_text.value === '') {
         showInfoToUser("请输入验证码", "error");
       } else {
+
+        login();
+
+
+
+        //store.dispatch("login");
+        //router.push({name: "home"});
+
         showInfoToUser("登录成功", "success");
       }
     };

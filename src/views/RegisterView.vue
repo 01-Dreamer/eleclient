@@ -29,7 +29,6 @@
       <el-button class="login-btn">去登录</el-button>
     </router-link>
   </div>
-
 </template>
 
 
@@ -99,6 +98,11 @@ export default {
 
     // 向后端请求邮箱验证码
     const getCaptchaEmail = () => {
+      if(email.value === '') {
+        showInfoToUser("请输入邮箱", "error");
+        return;
+      }
+
       $.ajax({
         url: 'http://localhost:12345/captchaEmail?email=' + email.value,
         type: 'GET',
