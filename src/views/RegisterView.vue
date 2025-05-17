@@ -59,17 +59,17 @@ export default {
 
     // 处理注册
     const handleRegister = () => {
-      if(email.value === '') {
+      if (email.value === '') {
         showInfoToUser("请输入邮箱", "error");
-      } else if(password.value === '') {
+      } else if (password.value === '') {
         showInfoToUser("请输入密码", "error");
-      } else if(!isValidPassword(password.value)) {
+      } else if (!isValidPassword(password.value)) {
         showInfoToUser("密码只能由 1-20 位字母或数字组成", "error", 1500);
-      } else if(confirm_password.value === '') {
+      } else if (confirm_password.value === '') {
         showInfoToUser("请确认密码", "error");
-      } else if(password.value != confirm_password.value) {
+      } else if (password.value != confirm_password.value) {
         showInfoToUser("两次输入的密码不一致", "error");
-      } else if(captcha_email.value === '') {
+      } else if (captcha_email.value === '') {
         showInfoToUser("请输入验证码", "error");
       } else {
         showInfoToUser("注册成功", "success");
@@ -97,37 +97,49 @@ export default {
     };
 
     // 向后端请求邮箱验证码
+    let captcha_email_id = null;
     const getCaptchaEmail = () => {
-      if(email.value === '') {
+      if (!email.value) {
         showInfoToUser("请输入邮箱", "error");
         return;
       }
 
       $.ajax({
-        url: 'http://localhost:12345/captchaEmail?email=' + email.value,
+        url: 'http://localhost:12345/captchaEmail?email=' + encodeURIComponent(email.value),
         type: 'GET',
         dataType: 'json',
-        success: (data) => {
-          if(data.error) {
-            console.error(data.error);
-            showInfoToUser("验证码发送失败", "error");
+        complete: function (xhr) {
+          switch (xhr.status) {
+            case 200: {
+              captcha_email_id = xhr.responseJSON.emailCaptchaId;
+              console.log("captcha_email_id", captcha_email_id);
+              startCountdown(180);
+              showInfoToUser("验证码发送成功", "success");
+              break;
+            }
+            case 429: {
+              const wait_time = parseInt(xhr.responseJSON?.wait || 180);
+              startCountdown(wait_time);
+              showInfoToUser(`请${wait_time}秒后重试`, "warning");
+              break;
+            }
+            case 400: {
+              showInfoToUser("验证码发送失败", "error");
+              break;
+            }
+            case 0: {
+              showInfoToUser("网络连接失败", "error");
+              break;
+            }
+            case 500: {
+              showInfoToUser("服务器繁忙", "error");
+              break;
+            }
+            default: {
+              console.error("未知状态码:", xhr.status, xhr.responseText);
+              showInfoToUser("请求异常，请重试", "error");
+            }
           }
-          else if (data.wait) {
-            startCountdown(parseInt(data.wait));
-            showInfoToUser("等待" + data.wait + "秒后重试", "warning");
-          }
-          else if(data.emailCaptchaId) {
-            startCountdown(parseInt(180));
-            showInfoToUser("验证码发送成功", "success");
-          }
-          else {
-            console.error("unknown info about captcha email");
-            showInfoToUser("未知错误", "error");
-          }
-        },
-        error: (error) => {
-          console.error('failed to get captcha email:', error);
-          showInfoToUser("服务器无响应", "error");
         }
       });
     };
@@ -137,7 +149,7 @@ export default {
 
 
 
-    
+
     return {
       email,
       password,
