@@ -31,7 +31,7 @@
 <script>
 import HeaderBase from "@/components/HeaderBase.vue";
 import { showInfoToUser } from '@/utils/notice';
-//import router from '@/router/index';
+import router from '@/router/index';
 import store from '@/store';
 import $ from 'jquery';
 import { ref } from 'vue';
@@ -52,7 +52,6 @@ export default {
     const captcha_img_url = ref('');
 
 
-  
 
     // 向后端请求图形验证码
     let captcha_img_id = null;
@@ -63,10 +62,10 @@ export default {
         xhrFields: {
           responseType: 'blob'
         },
-        success: (blob, status, xhr) => {
+        success: (blob, textStatus, xhr) => {
           captcha_img_url.value = URL.createObjectURL(blob);
           captcha_img_id = xhr.getResponseHeader("imgCaptchaId");
-          console.log("captcha_img_Id:", captcha_img_id);
+          console.log("captcha_img_id:",captcha_img_id);
         },
         error: (error) => {
           console.error('failed to get captcha image:', error);
@@ -77,53 +76,78 @@ export default {
     // 第一次进入登录页面自动请求图形验证码
     if (!store.state.is_login) getCaptchaImg();
 
-    const login = () => {
-      const login_data = {
-        email: email.value,
-        password: password.value,
-        captchaImgId: captcha_img_id,
-        captchaImgText: captcha_img_text.value,
-
-      };
-
-      $.ajax({
-        url: 'http://localhost:12345/login',
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(login_data),
-        success: (response) => {
-          console.log(response);
-        },
-        error: (error) => {
-          console.error(error);
-        }
-      });
-    };
-
     // 处理登录
     const handleLogin = () => {
-      if(email.value === '') {
+      if (email.value === '') {
         showInfoToUser("请输入邮箱", "error");
-      } else if(password.value === '') {
+      } else if (password.value === '') {
         showInfoToUser("请输入密码", "error");
-      } else if(captcha_img_text.value === '') {
+      } else if (captcha_img_text.value === '') {
         showInfoToUser("请输入验证码", "error");
       } else {
 
-        login();
+        const login_data = {
+          email: email.value,
+          password: password.value,
+          captchaImgId: captcha_img_id,
+          captchaImgText: captcha_img_text.value,
+        };
 
+        $.ajax({
+          url: 'http://localhost:12345/login',
+          type: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify(login_data),
+          complete: function (xhr) {
+            switch (xhr.status) {
+              case 200: {
+                showInfoToUser("登录成功", "success");
+                const refresh_token = xhr.responseJSON.userRefreshToken;
+                console.log("refresh_token:",refresh_token);
+                store.dispatch("login", {
+                  id: xhr.responseJSON.userId,
+                  email: email.value,
+                  refresh_token: refresh_token,
+                  is_login: true,
+                });
 
+                router.push({ name: "home" });
+                break;
+              }
+              case 401: {
+                if(xhr.responseJSON.errorCaptcha) {
+                  showInfoToUser("验证码错误", "error");
 
-        //store.dispatch("login");
-        //router.push({name: "home"});
-
-        showInfoToUser("登录成功", "success");
+                }
+                else if(xhr.responseJSON.errorEmailOrPasswd) {
+                  showInfoToUser("邮箱或密码错误", "error");
+                }
+                else {
+                  console.error("unknown_error:", xhr.responseText);
+                }
+                break;
+              }
+              case 0: {
+                showInfoToUser("网络连接失败", "error");
+                break;
+              }
+              case 500: {
+                showInfoToUser("服务器繁忙", "error");
+                break;
+              }
+              default: {
+                console.error("unknown_status:", xhr.status, xhr.responseText);
+                showInfoToUser("请求异常", "error");
+              }
+            }
+          }
+        });
       }
     };
 
 
 
-    
+
     return {
       email,
       password,

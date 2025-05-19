@@ -15,7 +15,7 @@
     </el-form-item>
     <el-form-item class="input-form" label="验证码:">
       <div class="captcha-content">
-        <el-input v-model="captcha_email" show-password placeholder="请输入邮箱验证码..."></el-input>
+        <el-input v-model="captcha_email_text" show-password placeholder="请输入邮箱验证码..."></el-input>
         <el-button class="captcha-btn" type="primary" @click="getCaptchaEmail" :disabled="disable_btn_countdown > 0">
           {{ disable_btn_countdown > 0 ? disable_btn_countdown + '秒后重试' : '获取验证码' }}
         </el-button>
@@ -35,6 +35,7 @@
 <script>
 import HeaderBase from "@/components/HeaderBase.vue";
 import { showInfoToUser } from '@/utils/notice';
+import router from '@/router/index';
 import $ from 'jquery';
 import { ref } from 'vue';
 
@@ -51,8 +52,62 @@ export default {
     const email = ref('');
     const password = ref('');
     const confirm_password = ref('')
-    const captcha_email = ref('');
+    const captcha_email_text = ref('');
     const disable_btn_countdown = ref(-1);
+
+
+    // 向后端请求邮箱验证码
+    let captcha_email_id = null;
+    const getCaptchaEmail = () => {
+      if (!email.value) {
+        showInfoToUser("请输入邮箱", "error");
+        return;
+      }
+
+      $.ajax({
+        url: 'http://localhost:12345/captchaEmail?email=' + encodeURIComponent(email.value),
+        type: 'GET',
+        dataType: 'json',
+        complete: function (xhr) {
+          switch (xhr.status) {
+            case 200: {
+              captcha_email_id = xhr.responseJSON.emailCaptchaId;
+              startCountdown(180);
+              showInfoToUser("验证码发送成功", "success");
+              console.log("captcha_email_id:", captcha_email_id);
+              break;
+            }
+            case 429: {
+              const wait_time = parseInt(xhr.responseJSON?.wait || 180);
+              startCountdown(wait_time);
+              showInfoToUser(`请${wait_time}秒后重试`, "warning");
+              break;
+            }
+            case 400: {
+              showInfoToUser("验证码发送失败", "error");
+              break;
+            }
+            case 409: {
+              showInfoToUser("邮箱被注册", "error");
+              break;
+            }
+            case 0: {
+              showInfoToUser("网络连接失败", "error");
+              break;
+            }
+            case 500: {
+              showInfoToUser("服务器繁忙", "error");
+              break;
+            }
+            default: {
+              console.error("unknown_status:", xhr.status, xhr.responseText);
+              showInfoToUser("请求异常", "error");
+            }
+          }
+        }
+      });
+    };
+
 
     // 合法密码的正则表达式
     const isValidPassword = (str) => /^[A-Za-z0-9]{1,20}$/.test(str);
@@ -69,10 +124,57 @@ export default {
         showInfoToUser("请确认密码", "error");
       } else if (password.value != confirm_password.value) {
         showInfoToUser("两次输入的密码不一致", "error");
-      } else if (captcha_email.value === '') {
+      } else if (captcha_email_text.value === '') {
         showInfoToUser("请输入验证码", "error");
       } else {
-        showInfoToUser("注册成功", "success");
+
+        const register_data = {
+          email: email.value,
+          password: password.value,
+          captchaEmailId: captcha_email_id,
+          captchaEmailText: captcha_email_text.value,
+        };
+
+        $.ajax({
+          url: 'http://localhost:12345/register',
+          type: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify(register_data),
+          complete: function (xhr) {
+            switch (xhr.status) {
+              case 200: {
+                showInfoToUser("注册成功", "success");
+                router.push({ name: "home" });
+                break;
+              }
+              case 401: {
+                showInfoToUser("验证码错误", "error");
+                break;
+              }
+              case 403: {
+                showInfoToUser("非法密码", "error");
+                console.error("error:", xhr.responseJSON.error);
+                break;
+              }
+              case 409: {
+                showInfoToUser("邮箱被注册", "error");
+                break;
+              }
+              case 0: {
+                showInfoToUser("网络连接失败", "error");
+                break;
+              }
+              case 500: {
+                showInfoToUser("服务器繁忙", "error");
+                break;
+              }
+              default: {
+                console.error("unknown_status:", xhr.status, xhr.responseText);
+                showInfoToUser("请求异常", "error");
+              }
+            }
+          }
+        });
       }
     };
 
@@ -96,53 +198,7 @@ export default {
 
     };
 
-    // 向后端请求邮箱验证码
-    let captcha_email_id = null;
-    const getCaptchaEmail = () => {
-      if (!email.value) {
-        showInfoToUser("请输入邮箱", "error");
-        return;
-      }
 
-      $.ajax({
-        url: 'http://localhost:12345/captchaEmail?email=' + encodeURIComponent(email.value),
-        type: 'GET',
-        dataType: 'json',
-        complete: function (xhr) {
-          switch (xhr.status) {
-            case 200: {
-              captcha_email_id = xhr.responseJSON.emailCaptchaId;
-              console.log("captcha_email_id", captcha_email_id);
-              startCountdown(180);
-              showInfoToUser("验证码发送成功", "success");
-              break;
-            }
-            case 429: {
-              const wait_time = parseInt(xhr.responseJSON?.wait || 180);
-              startCountdown(wait_time);
-              showInfoToUser(`请${wait_time}秒后重试`, "warning");
-              break;
-            }
-            case 400: {
-              showInfoToUser("验证码发送失败", "error");
-              break;
-            }
-            case 0: {
-              showInfoToUser("网络连接失败", "error");
-              break;
-            }
-            case 500: {
-              showInfoToUser("服务器繁忙", "error");
-              break;
-            }
-            default: {
-              console.error("未知状态码:", xhr.status, xhr.responseText);
-              showInfoToUser("请求异常，请重试", "error");
-            }
-          }
-        }
-      });
-    };
 
 
 
@@ -154,7 +210,7 @@ export default {
       email,
       password,
       confirm_password,
-      captcha_email,
+      captcha_email_text,
       disable_btn_countdown,
 
 
