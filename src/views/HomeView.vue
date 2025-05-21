@@ -1,21 +1,18 @@
 <template>
   <header>
     <el-icon class="location-icon">
-      <Location/>
+      <Location />
     </el-icon>
     <div class="location-text">
-      云南大学软件学院
+      云南大学呈贡校区
       <i class="fa fa-caret-down"></i>
     </div>
   </header>
 
   <div class="search">
     <div class="search-fixed-top">
-      <el-input v-model="search_input"
-                @keyup.enter="searchFunction"
-                style="width: 90%;"
-                :prefix-icon="Search"
-                placeholder="搜索饿了么商家、商品名称"/>
+      <el-input v-model="search_input" @keyup.enter="searchFunction" style="width: 90%;" :prefix-icon="Search"
+        placeholder="搜索饿了么商家、商品名称" />
     </div>
   </div>
 
@@ -145,10 +142,11 @@
 
 
 <script>
-import {Location} from '@element-plus/icons-vue'
-import {Search} from '@element-plus/icons-vue'
-import {ElInput, ElIcon} from 'element-plus'
-import {ref} from 'vue'
+import { Location } from '@element-plus/icons-vue'
+import { Search } from '@element-plus/icons-vue'
+import { ElInput, ElIcon } from 'element-plus'
+import { ref } from 'vue'
+
 
 export default {
   name: "HomeView",
@@ -182,7 +180,7 @@ export default {
       Search,
       search_input,
 
-      
+
       searchFunction,
       handleSort,
     }
@@ -216,6 +214,7 @@ header {
   color: #FFF;
 
   margin-left: 0.5vw;
+  margin-top: 2vw;
 }
 
 .search {

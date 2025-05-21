@@ -7,7 +7,7 @@ export default createStore({
     email: "",
     refresh_token: "",
     access_token: "",
-    is_login: false,
+    is_login: true,
     tokenInterval: null,
   },
   getters: {
@@ -31,6 +31,7 @@ export default createStore({
     },
 
     logout(state) {
+      
       state.id = -1;
       state.email = "";
       state.refresh_token = "";
@@ -96,7 +97,40 @@ export default createStore({
     },
 
     logout(context) {
-      context.commit("logout");
+
+      $.ajax({
+          url: 'http://localhost:12345/logout',
+          type: 'POST',
+          headers: {
+          'Authorization': `Bearer ${context.state.refresh_token}`
+        },
+          complete: function (xhr) {
+            switch (xhr.status) {
+              case 200: {
+                console.log("success to logout");
+                break;
+              }
+              case 401: {
+                console.error("error:", xhr.responseJSON.error);
+                break;
+              }
+              case 0: {
+                console.error("network connection failed");
+                break;
+              }
+              case 500: {
+                console.error("server is busy");
+                break;
+              }
+              default: {
+                console.error("unknown_status:", xhr.status, xhr.responseText);
+              }
+            }
+          }
+        });
+
+        context.commit("logout");
+
     },
 
   },
