@@ -9,6 +9,9 @@ export default createStore({
     access_token: "",
     is_login: true,
     tokenInterval: null,
+    longitude: -999,
+    latitude: -999,
+    location_text: '',
   },
   getters: {
   },
@@ -28,6 +31,12 @@ export default createStore({
 
     updateTokenInterval(state, tokenInterval) {
       state.tokenInterval = tokenInterval;
+    },
+
+    updateLocation(state, location) {
+      state.longitude = location.longitude;
+      state.latitude = location.latitude;
+      state.location_text = location.location_text;
     },
 
     logout(state) {
@@ -131,6 +140,10 @@ export default createStore({
 
         context.commit("logout");
 
+    },
+
+    updateLocation(context, location) {
+      context.commit("updateLocation", location);
     },
 
   },

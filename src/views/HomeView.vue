@@ -1,10 +1,10 @@
 <template>
   <header>
-    <el-icon class="location-icon">
+    <el-icon class="location-icon"  @click="getPosition">
       <Location />
     </el-icon>
     <div class="location-text">
-      云南大学呈贡校区
+      {{ location }}
       <i class="fa fa-caret-down"></i>
     </div>
   </header>
@@ -142,10 +142,13 @@
 
 
 <script>
-import { Location } from '@element-plus/icons-vue'
-import { Search } from '@element-plus/icons-vue'
-import { ElInput, ElIcon } from 'element-plus'
-import { ref } from 'vue'
+import { Location } from '@element-plus/icons-vue';
+import { Search } from '@element-plus/icons-vue';
+import { ElInput, ElIcon } from 'element-plus';
+import { showInfoToUser } from '@/utils/notice';
+import store from '@/store';
+import { ref } from 'vue';
+import $ from 'jquery';
 
 
 export default {
@@ -159,6 +162,9 @@ export default {
 
 
   setup() {
+    const location = ref(store.state.location_text);
+
+
     const search_input = ref('');
     const searchFunction = () => {
       console.log(search_input.value);
@@ -176,13 +182,59 @@ export default {
       }
     };
 
+
+    const getPosition = () => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          console.log("longitude:", position.coords.longitude);
+          console.log("latitude:", position.coords.latitude);
+
+          $.ajax({
+            url: 'http://localhost:12345/getFormattedAddress',
+            type: 'GET',
+            data: {
+              longitude: position.coords.longitude,
+              latitude: position.coords.latitude,
+            },
+            success: (response) => {
+              if (response === '') {
+                showInfoToUser("解析位置失败", "error");
+                console.error('error: response is null');
+                return;
+              }
+              showInfoToUser("获取位置成功", "success");
+              console.log('address:', response);
+              location.value = response;
+              store.dispatch("updateLocation", {
+                longitude: position.coords.longitude,
+                latitude: position.coords.latitude,
+                location_text: response,
+              });
+            },
+            error: (error) => {
+              showInfoToUser("解析位置失败", "error");
+              console.error('error:', error);
+            },
+          });
+
+        },
+        (error) => {
+          showInfoToUser("获取位置失败", "error");
+          console.error("failed to get position:", error)
+        },
+      );
+    };
+
+
     return {
+      location,
       Search,
       search_input,
 
 
       searchFunction,
       handleSort,
+      getPosition,
     }
 
   }
@@ -206,6 +258,8 @@ header {
 
   margin-left: 4vw;
   margin-top: 1vw;
+
+  cursor: pointer;
 }
 
 .location-text {

@@ -7,8 +7,8 @@
 
 <script>
 import HeaderBase from "@/components/HeaderBase.vue";
-import {useRoute} from 'vue-router';
-import {ref} from 'vue';
+import { useRoute } from 'vue-router';
+import { ref } from 'vue';
 
 export default {
   name: "BusinessView",

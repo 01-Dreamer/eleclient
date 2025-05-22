@@ -17,10 +17,10 @@ export default {
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        console.log("纬度:", position.coords.latitude);
-        console.log("经度:", position.coords.longitude);
+        console.log("longitude:", position.coords.longitude);
+        console.log("latitude:", position.coords.latitude);
       },
-      (error) => console.error("获取位置失败:", error)
+      (error) => console.error("failed to get position:", error)
     );
 
 
