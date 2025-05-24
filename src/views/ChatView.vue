@@ -1,6 +1,6 @@
 <template>
   <HeaderBase>
-    聊天: {{ id }}
+    聊天: {{ other_id }}
   </HeaderBase>
 
   <div class="chat-wrapper">
@@ -12,7 +12,7 @@
         </div>
 
         <div class="message-content">
-          <div class="timestamp">2025-5-23 15:02</div>
+          <div class="timestamp">{{ msg.create_time }}</div>
           <div class="bubble">{{ msg.content }}</div>
         </div>
       </div>
@@ -30,6 +30,9 @@ import { ref, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import HeaderBase from '@/components/HeaderBase.vue';
 import { ElInput, ElButton } from 'element-plus';
+import { showInfoToUser } from '@/utils/notice';
+import store from '@/store';
+import $ from 'jquery';
 
 export default {
   name: 'ChatView',
@@ -40,14 +43,31 @@ export default {
   },
   setup() {
     const route = useRoute();
-    const id = ref(route.params.id);
+    const self_id = store.state.id;
+    const other_id = ref(route.params.id);
 
     const input = ref('');
     const messages = ref([]);
     const chat_container = ref(null);
 
-    const addMessage = (content, type) => {
-      messages.value.push({ content, type });
+    let socket = null;
+
+
+    const addMessage = (message) => {
+      const sender_id = message.senderId;
+      const content = message.content;
+      const create_time = message.createTime;
+
+      let type = null;
+      if (String(sender_id) === String(self_id)) {
+        type = "me";
+      } else if (String(sender_id) === String(other_id.value)) {
+        type = "other";
+      } else {
+        console.log("failed to parse message: ", message);
+        return;
+      }
+      messages.value.push({ content, create_time, type });
       scrollToBottom();
     };
 
@@ -62,13 +82,52 @@ export default {
 
     const handleSend = () => {
       if (!input.value.trim()) return;
-      addMessage(input.value.trim(), 'me');
+      if (socket === null) {
+        showInfoToUser("连接未建立", "error");
+        return;
+      }
+
+      const message = {
+        senderId: store.state.id,
+        receiverId: other_id.value,
+        content: input.value,
+      };
+      socket.send(JSON.stringify(message));
+
       input.value = '';
-      setTimeout(() => addMessage('你好', 'other'), 300);
     };
 
+
+    // websocket 连接相关
+    $(document).ready(function () {
+      socket = new WebSocket('ws://localhost:12345/chat?id=' + self_id);
+
+      socket.onopen = function () {
+        console.log("websocket connect");
+      };
+
+      socket.onmessage = function (event) {
+        const message = JSON.parse(event.data);
+        addMessage(message);
+      };
+
+      socket.onclose = function () {
+        console.log("websocket close");
+        socket = null;
+      };
+
+      socket.onerror = function (error) {
+        console.error("websocket error:", error);
+        socket = null;
+      };
+    });
+
+
+
+
+
     return {
-      id,
+      other_id,
       input,
       messages,
       chat_container,

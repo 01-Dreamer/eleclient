@@ -113,7 +113,7 @@ export default {
       updateChatQuantity(id, 0);
 
       router.push({
-        name: "business",
+        name: "chat",
         params: {
           id
         }

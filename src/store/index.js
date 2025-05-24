@@ -7,11 +7,11 @@ export default createStore({
     email: "",
     refresh_token: "",
     access_token: "",
-    is_login: true,
+    is_login: false,
     tokenInterval: null,
     longitude: -999,
     latitude: -999,
-    location_text: '',
+    location_text: "",
   },
   getters: {
   },

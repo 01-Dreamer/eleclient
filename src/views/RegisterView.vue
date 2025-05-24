@@ -72,13 +72,13 @@ export default {
           switch (xhr.status) {
             case 200: {
               captcha_email_id = xhr.responseJSON.emailCaptchaId;
-              startCountdown(180);
+              startCountdown(300);
               showInfoToUser("验证码发送成功", "success");
               console.log("captcha_email_id:", captcha_email_id);
               break;
             }
             case 429: {
-              const wait_time = parseInt(xhr.responseJSON?.wait || 180);
+              const wait_time = parseInt(xhr.responseJSON?.wait || 300);
               startCountdown(wait_time);
               showInfoToUser(`请${wait_time}秒后重试`, "warning");
               break;
