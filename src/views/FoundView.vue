@@ -111,14 +111,12 @@ export default {
 
     const clickBusiness = (id) => {
       updateChatQuantity(id, 0);
-
       router.push({
-        name: "chat",
+        name: "business",
         params: {
           id
         }
       })
-
     };
 
 

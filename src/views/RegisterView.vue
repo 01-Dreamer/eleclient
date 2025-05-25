@@ -24,7 +24,7 @@
   </div>
 
   <div class="button-group">
-    <el-button class="register-btn" type="primary" @click="handleRegister">注册</el-button>
+    <el-button class="register-btn" type="primary" @click="handleRegister" @keyup.enter="handleRegister">注册</el-button>
     <router-link :to="{ name: 'login' }">
       <el-button class="login-btn">去登录</el-button>
     </router-link>

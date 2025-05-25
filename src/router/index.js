@@ -9,6 +9,8 @@ import OrderView from '../views/OrderView.vue';
 import MineView from '../views/MineView.vue';
 import BusinessView from '../views/BusinessView.vue';
 import ChatView from '@/views/ChatView.vue';
+import PayView from '@/views/PayView.vue';
+import ConfirmOrderView from '@/views/ConfirmOrderView.vue';
 
 
 import TestView from '../views/TestView.vue';
@@ -43,6 +45,18 @@ const routes = [
     path: '/order',
     name: 'order',
     component: OrderView,
+    meta: { requiresAuth: true } 
+  },
+  {
+    path: '/confirm_order',
+    name: 'confirm_order',
+    component: ConfirmOrderView,
+    meta: { requiresAuth: true } 
+  },
+  {
+    path: '/pay',
+    name: 'pay',
+    component: PayView,
     meta: { requiresAuth: true }
   },
   {

@@ -43,8 +43,8 @@ export default {
   },
   setup() {
     const route = useRoute();
-    const self_id = store.state.id;
-    const other_id = ref(route.params.id);
+    const self_id = String(store.state.id);
+    const other_id = ref(String(route.params.id));
 
     const input = ref('');
     const messages = ref([]);
@@ -59,9 +59,9 @@ export default {
       const create_time = message.createTime;
 
       let type = null;
-      if (String(sender_id) === String(self_id)) {
+      if (sender_id === self_id) {
         type = "me";
-      } else if (String(sender_id) === String(other_id.value)) {
+      } else if (sender_id === other_id.value) {
         type = "other";
       } else {
         console.log("failed to parse message: ", message);
@@ -82,6 +82,27 @@ export default {
 
     const handleSend = () => {
       if (!input.value.trim()) return;
+      if(self_id === other_id.value) {
+        const content = input.value.trim();
+
+        // 自己和自己聊天，获取本地时间即可
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth() + 1;
+        const day = now.getDate();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        const create_time = `${year}-${month}-${day} ${hours}:${minutes < 10 ? '0' + minutes : minutes}`;
+
+        const type = "me";
+        messages.value.push({ content, create_time, type });
+
+        scrollToBottom();
+        input.value = '';
+        return;
+      }
+
+
       if (socket === null) {
         showInfoToUser("连接未建立", "error");
         return;
@@ -121,8 +142,6 @@ export default {
         socket = null;
       };
     });
-
-
 
 
 

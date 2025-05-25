@@ -3,11 +3,11 @@ import $ from 'jquery';
 
 export default createStore({
   state: {
-    id: -1,
+    id: 1,
     email: "",
     refresh_token: "",
     access_token: "",
-    is_login: false,
+    is_login: true,
     tokenInterval: null,
     longitude: -999,
     latitude: -999,
