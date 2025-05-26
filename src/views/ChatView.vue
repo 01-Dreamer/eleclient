@@ -43,14 +43,15 @@ export default {
   },
   setup() {
     const route = useRoute();
-    const self_id = String(store.state.id);
-    const other_id = ref(String(route.params.id));
+    const self_id = store.state.id;
+    const other_id = ref(route.params.id);
 
     const input = ref('');
     const messages = ref([]);
     const chat_container = ref(null);
 
-    let socket = null;
+    let socket = store.state.socket;
+
 
 
     const addMessage = (message) => {
@@ -59,9 +60,9 @@ export default {
       const create_time = message.createTime;
 
       let type = null;
-      if (sender_id === self_id) {
+      if (String(sender_id) === String(self_id)) {
         type = "me";
-      } else if (sender_id === other_id.value) {
+      } else if (String(sender_id) === String(other_id.value)) {
         type = "other";
       } else {
         console.log("failed to parse message: ", message);
@@ -80,9 +81,42 @@ export default {
       });
     };
 
+    // websocket 连接相关
+    const createWebsocket = () => {
+      $(document).ready(function () {
+        socket = new WebSocket('ws://localhost:12345/chat?id=' + self_id);
+
+        socket.onopen = function () {
+          console.log("websocket connect");
+          store.dispatch("updateSocket", socket);
+        };
+
+        socket.onmessage = function (event) {
+          const message = JSON.parse(event.data);
+          addMessage(message);
+        };
+
+        socket.onclose = function () {
+          console.log("websocket close");
+          store.dispatch("updateSocket", null);
+          socket = null;
+        };
+
+        socket.onerror = function (error) {
+          console.error("websocket error:", error);
+          store.dispatch("updateSocket", null);
+          socket = null;
+        };
+      });
+    };
+
+    if (socket == null) {
+      createWebsocket();
+    }
+
     const handleSend = () => {
       if (!input.value.trim()) return;
-      if(self_id === other_id.value) {
+      if (self_id === other_id.value) {
         const content = input.value.trim();
 
         // 自己和自己聊天，获取本地时间即可
@@ -102,6 +136,9 @@ export default {
         return;
       }
 
+      if (socket === null) {
+        createWebsocket();
+      }
 
       if (socket === null) {
         showInfoToUser("连接未建立", "error");
@@ -118,31 +155,26 @@ export default {
       input.value = '';
     };
 
+    if (String(self_id) !== String(other_id)) {
+      $.ajax({
+        url: 'http://localhost:12345/getChatMessage?id1=' + self_id + '&id2=' + other_id.value,
+        type: 'GET',
+        success: (data) => {
+          data.forEach(msg => {
+            addMessage({
+              senderId: msg.senderId,
+              content: msg.content,
+              createTime: msg.createTime.replace('T', ' ').slice(0, 16),
+            })
+          });
 
-    // websocket 连接相关
-    $(document).ready(function () {
-      socket = new WebSocket('ws://localhost:12345/chat?id=' + self_id);
-
-      socket.onopen = function () {
-        console.log("websocket connect");
-      };
-
-      socket.onmessage = function (event) {
-        const message = JSON.parse(event.data);
-        addMessage(message);
-      };
-
-      socket.onclose = function () {
-        console.log("websocket close");
-        socket = null;
-      };
-
-      socket.onerror = function (error) {
-        console.error("websocket error:", error);
-        socket = null;
-      };
-    });
-
+          scrollToBottom();
+        },
+        error: (error) => {
+          console.error('failed to get chat message:', error);
+        }
+      });
+    }
 
 
     return {

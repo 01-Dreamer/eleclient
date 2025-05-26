@@ -74,7 +74,9 @@ export default {
     };
 
     // 第一次进入登录页面自动请求图形验证码
-    if (!store.state.is_login) getCaptchaImg();
+    if (!store.state.is_login) {
+      getCaptchaImg();
+    }
 
     // 处理登录
     const handleLogin = () => {

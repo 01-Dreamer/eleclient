@@ -3,15 +3,16 @@ import $ from 'jquery';
 
 export default createStore({
   state: {
-    id: 1,
+    id: -1,
     email: "",
     refresh_token: "",
     access_token: "",
-    is_login: true,
+    is_login: false,
     tokenInterval: null,
     longitude: -999,
     latitude: -999,
     location_text: "",
+    socket: null,
   },
   getters: {
   },
@@ -37,6 +38,10 @@ export default createStore({
       state.longitude = location.longitude;
       state.latitude = location.latitude;
       state.location_text = location.location_text;
+    },
+
+    updateSocket(state, socket) {
+      state.socket = socket;
     },
 
     logout(state) {
@@ -144,6 +149,10 @@ export default createStore({
 
     updateLocation(context, location) {
       context.commit("updateLocation", location);
+    },
+
+    updateSocket(context, socket) {
+      context.commit("updateSocket", socket);
     },
 
   },
