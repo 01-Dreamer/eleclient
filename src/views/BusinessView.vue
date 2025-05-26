@@ -11,13 +11,7 @@
     <h1>万家饺子（软件园E18店）</h1>
     <p>&#165;15起送 &#165;3配送</p>
     <p>各种饺子炒菜</p>
-    <el-button
-        type="primary"
-        size="small"
-        @click="clickContact"
-        v-show="self_id !== other_id"
-        class="contact-btn"
-    >
+    <el-button type="primary" size="small" @click="clickContact" v-show="self_id !== other_id" class="contact-btn">
       联系商家
     </el-button>
   </div>
@@ -192,6 +186,9 @@ export default {
   },
 
   setup() {
+    const route = useRoute();
+    const self_id = String(store.state.id);
+    const other_id = ref(String(route.params.id));
 
     const clickContact = () => {
       router.push({
@@ -201,11 +198,6 @@ export default {
         }
       })
     };
-
-
-    const route = useRoute();
-    const self_id = String(store.state.id);
-    const other_id = ref(String(route.params.id));
 
     return {
       self_id,

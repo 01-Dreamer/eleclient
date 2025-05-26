@@ -7,7 +7,7 @@ export default createStore({
     email: "",
     refresh_token: "",
     access_token: "",
-    is_login: false,
+    is_login: true,
     tokenInterval: null,
     longitude: -999,
     latitude: -999,
