@@ -10,10 +10,65 @@
 
 <script>
 import NavBar from './components/NavBar.vue';
+import router from '@/router/index';
+import store from '@/store';
+import $ from 'jquery';
 
 export default {
   components: {
     NavBar,
+  },
+
+  setup() {
+    // 使用前端存储的长期Jwt令牌请求登录
+    const refresh_token = localStorage.getItem('refresh_token');
+    console.log("refresh_token in localStorage: ", refresh_token);
+    if (refresh_token !== null) {
+      $.ajax({
+        url: 'http://localhost:12345/loginByRefreshToken',
+        type: 'POST',
+        headers: {
+          'Authorization': `Bearer ${refresh_token}`
+        },
+        complete: function (xhr) {
+          switch (xhr.status) {
+            case 200: {
+              const refresh_token = xhr.responseJSON.userRefreshToken;
+              console.log("refresh_token:", refresh_token);
+              store.dispatch("login", {
+                id: xhr.responseJSON.userId,
+                email: xhr.responseJSON.email,
+                avatar: xhr.responseJSON.avatar,
+                refresh_token: refresh_token,
+                is_login: true,
+              });
+
+              router.push({ name: "home" });
+              break;
+            }
+            case 401: {
+              localStorage.setItem('refresh_token', refresh_token);
+              console.log("unauthorized");
+              break;
+            }
+            case 0: {
+              localStorage.setItem('refresh_token', refresh_token);
+              console.error("failed to connect network");
+              break;
+            }
+            case 500: {
+              localStorage.setItem('refresh_token', refresh_token);
+              console.error("server is busy");
+              break;
+            }
+            default: {
+              localStorage.setItem('refresh_token', refresh_token);
+              console.error("unknown_status:", xhr.status, xhr.responseText);
+            }
+          }
+        }
+      });
+    }
   }
 }
 

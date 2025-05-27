@@ -65,7 +65,7 @@ export default {
         success: (blob, textStatus, xhr) => {
           captcha_img_url.value = URL.createObjectURL(blob);
           captcha_img_id = xhr.getResponseHeader("imgCaptchaId");
-          console.log("captcha_img_id:",captcha_img_id);
+          console.log("captcha_img_id:", captcha_img_id);
         },
         error: (error) => {
           console.error('failed to get captcha image:', error);
@@ -74,9 +74,11 @@ export default {
     };
 
     // 第一次进入登录页面自动请求图形验证码
-    if (!store.state.is_login) {
-      getCaptchaImg();
-    }
+    setTimeout(() => {
+      if (!store.state.is_login) {
+        getCaptchaImg();
+      }
+    }, 10);
 
     // 处理登录
     const handleLogin = () => {
@@ -105,7 +107,7 @@ export default {
               case 200: {
                 showInfoToUser("登录成功", "success");
                 const refresh_token = xhr.responseJSON.userRefreshToken;
-                console.log("refresh_token:",refresh_token);
+                console.log("refresh_token:", refresh_token);
                 store.dispatch("login", {
                   id: xhr.responseJSON.userId,
                   email: email.value,
@@ -114,27 +116,33 @@ export default {
                   is_login: true,
                 });
 
+                // 在前端存储长期jwt令牌
+                localStorage.setItem('refresh_token', refresh_token);
+
                 router.push({ name: "home" });
                 break;
               }
               case 401: {
-                if(xhr.responseJSON.errorCaptcha) {
+                if (xhr.responseJSON.errorCaptcha) {
                   showInfoToUser("验证码错误", "error");
 
                 }
-                else if(xhr.responseJSON.errorEmailOrPasswd) {
+                else if (xhr.responseJSON.errorEmailOrPasswd) {
                   showInfoToUser("邮箱或密码错误", "error");
                 }
                 else {
                   console.error("unknown_error:", xhr.responseText);
                 }
+                console.log("unauthorized");
                 break;
               }
               case 0: {
+                console.error("failed to connect network");
                 showInfoToUser("网络连接失败", "error");
                 break;
               }
               case 500: {
+                console.error("server is busy");
                 showInfoToUser("服务器繁忙", "error");
                 break;
               }
@@ -147,8 +155,6 @@ export default {
         });
       }
     };
-
-
 
 
     return {

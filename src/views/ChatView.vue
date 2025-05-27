@@ -91,7 +91,7 @@ export default {
         'Authorization': `Bearer ${store.state.access_token}`
       },
       success: (data) => {
-        if (data === null) {
+        if (data === "") {
           console.error("the avatar is null, id=", other_id.value);
         } else {
           other_avatar.value = data;
@@ -184,7 +184,7 @@ export default {
           'Authorization': `Bearer ${store.state.access_token}`
         },
         success: (data) => {
-          if (data === null) {
+          if (data === "") {
             console.error("failed to get history message");
             return;
           }

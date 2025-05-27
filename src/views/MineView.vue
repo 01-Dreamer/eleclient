@@ -20,7 +20,7 @@
       </el-button>
       <div class="location-text-wrapper">
         <span class="location-text">
-          云南大学软件学院
+          {{ location }}
         </span>
       </div>
     </div>
@@ -59,7 +59,9 @@ import { computed } from 'vue';
 import HeaderBase from "@/components/HeaderBase.vue";
 import $ from "jquery";
 import { showInfoToUser } from '@/utils/notice';
+import router from '@/router';
 import store from '@/store';
+import { ElMessageBox } from 'element-plus';
 import {
   Camera,
   Location,
@@ -80,6 +82,7 @@ export default {
 
   setup() {
     const avatar = computed(() => store.state.avatar);
+    const location = computed(() => store.state.location_text);
 
     const changeAvatar = () => {
       const input = document.createElement('input');
@@ -129,7 +132,38 @@ export default {
 
 
     const changeLocation = () => {
-      console.log('更换位置');
+      ElMessageBox.prompt('请输入您的位置', '位置设置', {
+        confirmButtonText: '定位',
+        cancelButtonText: '取消',
+        inputPattern: /\S+/,
+        inputErrorMessage: '请输入有效位置信息',
+      }).then(({ value }) => {
+        $.ajax({
+          url: 'http://localhost:12345/getPosition?address=' + value.trim(),
+          type: 'GET',
+          headers: {
+            'Authorization': `Bearer ${store.state.access_token}`
+          },
+          success: (data) => {
+            if (data === "") {
+              showInfoToUser("定位失败", "error");
+            } else {
+              showInfoToUser("定位成功", "success");
+              store.dispatch("updateLocation", {
+                longitude: data.longitude,
+                latitude: data.latitude,
+                location_text: value.trim()
+              });
+              console.log("pasition: ", data);
+            }
+          },
+          error: (error) => {
+            showInfoToUser("定位失败", "error");
+            console.error("failed to get location: ", error);
+          }
+        });
+      });
+
     };
 
     const goToStore = () => {
@@ -137,11 +171,16 @@ export default {
     };
 
     const logout = () => {
-      console.log('退出登录');
+      store.dispatch("logout");
+      localStorage.removeItem('refresh_token');
+      router.push({
+        name: "login",
+      })
     };
 
     return {
       avatar,
+      location,
 
       changeAvatar,
       changeLocation,

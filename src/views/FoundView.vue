@@ -23,7 +23,7 @@
 <script>
 import HeaderBase from '@/components/HeaderBase.vue';
 import router from '@/router'
-import {ref} from 'vue'
+import { ref } from 'vue'
 
 export default {
   name: "FoundView",
