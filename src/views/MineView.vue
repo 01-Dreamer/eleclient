@@ -9,7 +9,7 @@
           <Camera />
         </el-icon>
       </el-button>
-      <img class="profile-image" :src="avatar_url" alt="未发现头像" />
+      <img class="profile-image" :src="avatar" />
     </div>
 
     <div class="mine-info-item location-item">
@@ -55,10 +55,11 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+import { computed } from 'vue';
 import HeaderBase from "@/components/HeaderBase.vue";
 import $ from "jquery";
 import { showInfoToUser } from '@/utils/notice';
+import store from '@/store';
 import {
   Camera,
   Location,
@@ -78,7 +79,7 @@ export default {
   },
 
   setup() {
-    const avatar_url = ref("https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/0db0c107-c9c3-4aa2-a6dc-e67c5ebd3868.jpg");
+    const avatar = computed(() => store.state.avatar);
 
     const changeAvatar = () => {
       const input = document.createElement('input');
@@ -98,17 +99,20 @@ export default {
         formData.append('file', file);
 
         $.ajax({
-          url: 'http://localhost:12345/upload',
+          url: 'http://localhost:12345/uploadAvatar',
           type: 'POST',
+          headers: {
+            'Authorization': `Bearer ${store.state.access_token}`
+          },
           data: formData,
           processData: false,
           contentType: false,
           success: (data) => {
-            if(data === null) {
+            if (data === "") {
               showInfoToUser("头像上传失败", "error");
             } else {
-              avatar_url.value = data;
               showInfoToUser("头像上传成功", "success");
+              store.dispatch("updateAvatar", data);
               console.log("avatar url: ", data);
             }
           },
@@ -137,7 +141,7 @@ export default {
     };
 
     return {
-      avatar_url,
+      avatar,
 
       changeAvatar,
       changeLocation,

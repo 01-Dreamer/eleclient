@@ -1,6 +1,6 @@
 <template>
   <header>
-    <el-icon class="location-icon"  @click="getPosition">
+    <el-icon class="location-icon" @click="getPosition">
       <Location />
     </el-icon>
     <div class="location-text">
@@ -192,6 +192,9 @@ export default {
           $.ajax({
             url: 'http://localhost:12345/getFormattedAddress',
             type: 'GET',
+            headers: {
+              'Authorization': `Bearer ${store.state.access_token}`
+            },
             data: {
               longitude: position.coords.longitude,
               latitude: position.coords.latitude,

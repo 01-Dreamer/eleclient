@@ -8,7 +8,7 @@
       <div v-for="(msg, index) in messages" :key="index"
         :class="['chat-message', msg.type === 'me' ? 'from-me' : 'from-other']">
         <div class="avatar">
-          <img src="../img/avatar.jpg" alt="avatar" />
+          <img :src="msg.type === 'me' ? self_avatar : other_avatar" />
         </div>
 
         <div class="message-content">
@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import { ref, nextTick } from 'vue';
+import { ref, nextTick, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import HeaderBase from '@/components/HeaderBase.vue';
 import { ElInput, ElButton } from 'element-plus';
@@ -43,15 +43,17 @@ export default {
   },
   setup() {
     const route = useRoute();
+
     const self_id = store.state.id;
     const other_id = ref(route.params.id);
+    const self_avatar = computed(() => store.state.avatar);
+    const other_avatar = ref('');
 
     const input = ref('');
     const messages = ref([]);
     const chat_container = ref(null);
 
-    let socket = store.state.socket;
-
+    const socket = computed(() => store.state.socket)
 
 
     const addMessage = (message) => {
@@ -81,36 +83,54 @@ export default {
       });
     };
 
+    // 请求获取对方头像
+    $.ajax({
+      url: 'http://localhost:12345/getOtherAvatar?id=' + other_id.value,
+      type: 'GET',
+      headers: {
+        'Authorization': `Bearer ${store.state.access_token}`
+      },
+      success: (data) => {
+        if (data === null) {
+          console.error("the avatar is null, id=", other_id.value);
+        } else {
+          other_avatar.value = data;
+          console.log("other avatar:", data);
+        }
+      },
+      error: (error) => {
+        console.error("failed to get other avatar: ", error);
+      }
+    });
+
     // websocket 连接相关
     const createWebsocket = () => {
       $(document).ready(function () {
-        socket = new WebSocket('ws://localhost:12345/chat?id=' + self_id);
+        const _socket = new WebSocket('ws://localhost:12345/chat?id=' + self_id);
 
-        socket.onopen = function () {
+        _socket.onopen = function () {
           console.log("websocket connect");
-          store.dispatch("updateSocket", socket);
+          store.dispatch("updateSocket", _socket);
         };
 
-        socket.onmessage = function (event) {
+        _socket.onmessage = function (event) {
           const message = JSON.parse(event.data);
           addMessage(message);
         };
 
-        socket.onclose = function () {
+        _socket.onclose = function () {
           console.log("websocket close");
           store.dispatch("updateSocket", null);
-          socket = null;
         };
 
-        socket.onerror = function (error) {
+        _socket.onerror = function (error) {
           console.error("websocket error:", error);
           store.dispatch("updateSocket", null);
-          socket = null;
         };
       });
     };
 
-    if (socket == null) {
+    if (socket.value == null) {
       createWebsocket();
     }
 
@@ -136,11 +156,11 @@ export default {
         return;
       }
 
-      if (socket === null) {
+      if (socket.value === null) {
         createWebsocket();
       }
 
-      if (socket === null) {
+      if (socket.value === null) {
         showInfoToUser("连接未建立", "error");
         return;
       }
@@ -150,16 +170,24 @@ export default {
         receiverId: other_id.value,
         content: input.value,
       };
-      socket.send(JSON.stringify(message));
+      socket.value.send(JSON.stringify(message));
 
       input.value = '';
     };
 
+    // 获取历史聊天记录
     if (String(self_id) !== String(other_id)) {
       $.ajax({
         url: 'http://localhost:12345/getChatMessage?id1=' + self_id + '&id2=' + other_id.value,
         type: 'GET',
+        headers: {
+          'Authorization': `Bearer ${store.state.access_token}`
+        },
         success: (data) => {
+          if (data === null) {
+            console.error("failed to get history message");
+            return;
+          }
           data.forEach(msg => {
             addMessage({
               senderId: msg.senderId,
@@ -182,6 +210,8 @@ export default {
       input,
       messages,
       chat_container,
+      self_avatar,
+      other_avatar,
 
       handleSend,
     };

@@ -109,6 +109,7 @@ export default {
                 store.dispatch("login", {
                   id: xhr.responseJSON.userId,
                   email: email.value,
+                  avatar: xhr.responseJSON.avatar,
                   refresh_token: refresh_token,
                   is_login: true,
                 });
