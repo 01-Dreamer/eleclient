@@ -53,9 +53,12 @@ export default {
     const messages = ref([]);
     const chat_container = ref(null);
 
-    const socket = computed(() => store.state.socket)
+    let socket = computed(() => store.state.socket);
 
+    store.dispatch("updateIsChat", other_id.value);
+    console.log("enter chat, id=", other_id.value);
 
+    // 添加消息
     const addMessage = (message) => {
       const sender_id = message.senderId;
       const content = message.content;
@@ -67,13 +70,15 @@ export default {
       } else if (String(sender_id) === String(other_id.value)) {
         type = "other";
       } else {
-        console.log("failed to parse message: ", message);
+        console.log("failed to parse message:", message);
         return;
       }
+
       messages.value.push({ content, create_time, type });
       scrollToBottom();
     };
 
+    // 设置滚动条到消息最下面
     const scrollToBottom = () => {
       nextTick(() => {
         const container = chat_container.value;
@@ -103,40 +108,25 @@ export default {
       }
     });
 
-    // websocket 连接相关
-    const createWebsocket = () => {
-      $(document).ready(function () {
-        const _socket = new WebSocket('ws://localhost:12345/chat?id=' + self_id);
+    if (socket.value === null) {
+      store.dispatch("createWebsocket");
+    }
 
-        _socket.onopen = function () {
-          console.log("websocket connect");
-          store.dispatch("updateSocket", _socket);
-        };
-
-        _socket.onmessage = function (event) {
+    // 重新加载组件需要设置onmessage刷新来messages
+    setTimeout(() => {
+      if (socket.value !== null) {
+        socket.value.onmessage = function (event) {
           const message = JSON.parse(event.data);
           addMessage(message);
+          store.dispatch("addMsgCount", message.senderId);
         };
-
-        _socket.onclose = function () {
-          console.log("websocket close");
-          store.dispatch("updateSocket", null);
-        };
-
-        _socket.onerror = function (error) {
-          console.error("websocket error:", error);
-          store.dispatch("updateSocket", null);
-        };
-      });
-    };
-
-    if (socket.value == null) {
-      createWebsocket();
-    }
+        store.dispatch("updateSocket", socket);
+      }
+    }, 100);
 
     const handleSend = () => {
       if (!input.value.trim()) return;
-      if (self_id === other_id.value) {
+      if (String(self_id) === String(other_id.value)) {
         const content = input.value.trim();
 
         // 自己和自己聊天，获取本地时间即可
@@ -148,16 +138,14 @@ export default {
         const minutes = now.getMinutes();
         const create_time = `${year}-${month}-${day} ${hours}:${minutes < 10 ? '0' + minutes : minutes}`;
 
-        const type = "me";
-        messages.value.push({ content, create_time, type });
+        addMessage({
+          senderId: self_id,
+          content: content,
+          createTime: create_time
+        });
 
-        scrollToBottom();
         input.value = '';
         return;
-      }
-
-      if (socket.value === null) {
-        createWebsocket();
       }
 
       if (socket.value === null) {
@@ -171,9 +159,9 @@ export default {
         content: input.value,
       };
       socket.value.send(JSON.stringify(message));
-
       input.value = '';
     };
+
 
     // 获取历史聊天记录
     if (String(self_id) !== String(other_id)) {
@@ -192,11 +180,9 @@ export default {
             addMessage({
               senderId: msg.senderId,
               content: msg.content,
-              createTime: msg.createTime.replace('T', ' ').slice(0, 16),
+              createTime: msg.createTime.replace('T', ' ').slice(0, 16)
             })
           });
-
-          scrollToBottom();
         },
         error: (error) => {
           console.error('failed to get chat message:', error);

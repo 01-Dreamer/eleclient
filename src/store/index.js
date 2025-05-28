@@ -11,13 +11,15 @@ export default createStore({
     access_token: "",
     tokenInterval: null,
 
-    is_login: false,
-
     longitude: -999,
     latitude: -999,
     location_text: "",
 
+    is_login: false,
+
     socket: null,
+    is_chat: -1,
+    msg_count: new Map(),
   },
   getters: {
   },
@@ -58,6 +60,26 @@ export default createStore({
       state.socket = socket;
     },
 
+    updateIsChat(state, is_chat) {
+      state.is_chat = is_chat;
+    },
+
+    clearMsgCount(state, key) {
+      const map = new Map(state.msg_count);
+      map.set(key, 0);
+      state.msg_count = map;
+    },
+
+    addMsgCount(state, key) {
+      if (String(key) === String(state.is_chat) || String(key) === String(state.id)) {
+        return;
+      }
+      const map = new Map(state.msg_count);
+      const value = map.get(key) || 0;
+      map.set(key, value + 1);
+      state.msg_count = map;
+    },
+
     logout(state) {
 
       state.id = -1;
@@ -66,7 +88,46 @@ export default createStore({
       state.access_token = "";
       state.is_login = false;
       state.tokenInterval = null;
+    },
+
+    createWebsocket(state) {
+      $(document).ready(function () {
+
+        const _socket = new WebSocket(`ws://localhost:12345/chat?token=${state.access_token}`);
+        _socket.onopen = function () {
+          console.log("websocket connect");
+          state.socket = _socket;
+        };
+
+        _socket.onmessage = function (event) {
+          const message = JSON.parse(event.data);
+          const key = message.senderId;
+          if (String(key) === String(state.is_chat) || String(key) === String(state.id)) {
+            return;
+          }
+          const map = new Map(state.msg_count);
+          const value = map.get(key) || 0;
+          map.set(key, value + 1);
+          state.msg_count = map;
+        };
+
+        _socket.onclose = function () {
+          console.log("websocket close");
+          setTimeout(() => {
+            state.socket = null;
+          }, 100);
+        };
+
+        _socket.onerror = function (error) {
+          console.error("websocket error:", error);
+          setTimeout(() => {
+            state.socket = null;
+          }, 100);
+        };
+
+      });
     }
+
 
   },
   actions: {
@@ -116,12 +177,14 @@ export default createStore({
       };
 
       refreshToken();
+      setTimeout(() => {
+        context.commit("createWebsocket");
+      }, 1000);
       const tokenInterval = setInterval(() => {
         refreshToken();
       }, 280 * 1000);
 
       context.commit("updateTokenInterval", tokenInterval);
-
     },
 
     logout(context) {
@@ -173,7 +236,26 @@ export default createStore({
       context.commit("updateSocket", socket);
     },
 
+    updateIsChat(context, is_chat) {
+      context.commit("updateIsChat", is_chat);
+    },
+
+    clearMsgCount(context, key) {
+      context.commit("clearMsgCount", key);
+    },
+
+    addMsgCount(context, key) {
+      context.commit("addMsgCount", key);
+    },
+
+    createWebsocket(context) {
+      context.commit("createWebsocket");
+    }
+
   },
   modules: {
+
   }
+
+
 })

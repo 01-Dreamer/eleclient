@@ -7,7 +7,9 @@
     <li v-for="business in businesses" :key="business.id" @click="clickBusiness(business.id)">
       <div class="business-img">
         <img :src="business.img_url">
-        <div class="business-img-quantity" v-if="business.chat_quantity.value > 0">{{ business.chat_quantity }}</div>
+        <div class="business-img-quantity" v-if="getMsgCount(business.id) > 0">
+          {{ getMsgCount(business.id) }}
+        </div>
       </div>
       <div class="business-info">
         <h3>{{ business.business_name }}</h3>
@@ -22,8 +24,9 @@
 
 <script>
 import HeaderBase from '@/components/HeaderBase.vue';
-import router from '@/router'
-import { ref } from 'vue'
+import router from '@/router';
+import { ref, computed } from 'vue';
+import store from '@/store';
 
 export default {
   name: "FoundView",
@@ -33,25 +36,29 @@ export default {
   },
 
   setup() {
+    const msg_count = computed(() => store.state.msg_count);
+    const getMsgCount = (id)=>{
+      return msg_count.value.get(id) || 0;
+    };
 
     const businesses = [
       {
         id: 1,
-        chat_quantity: ref(3),
+        chat_quantity: ref(msg_count.value.get(1) || 0),
         img_url: require('../img/sj01.png'),
         business_name: '万家饺子（软件园E18店）',
         business_description: '各种饺子炒菜',
       },
       {
         id: 2,
-        chat_quantity: ref(2),
+        chat_quantity: ref(msg_count.value.get(2) || 0),
         img_url: require('../img/sj02.png'),
         business_name: '小锅饭豆腐馆（全运店）',
         business_description: '特色美食',
       },
       {
         id: 3,
-        chat_quantity: ref(1),
+        chat_quantity: ref(0),
         img_url: require('../img/sj03.png'),
         business_name: '麦当劳麦乐送（全运路店）',
         business_description: '汉堡薯条',
@@ -100,17 +107,8 @@ export default {
       },
     ]
 
-    const updateChatQuantity = (id, newChatQuantity) => {
-      const business = businesses.find(item => item.id === id)
-      if (business) {
-        business.chat_quantity.value = newChatQuantity;
-      } else {
-        console.warn(`not found business:${id}`);
-      }
-    };
-
     const clickBusiness = (id) => {
-      updateChatQuantity(id, 0);
+      store.dispatch("clearMsgCount", id);
       router.push({
         name: "business",
         params: {
@@ -122,6 +120,8 @@ export default {
 
     return {
       businesses,
+
+      getMsgCount,
       clickBusiness,
     }
 

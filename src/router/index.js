@@ -45,13 +45,13 @@ const routes = [
     path: '/order',
     name: 'order',
     component: OrderView,
-    meta: { requiresAuth: true } 
+    meta: { requiresAuth: true }
   },
   {
     path: '/confirm_order',
     name: 'confirm_order',
     component: ConfirmOrderView,
-    meta: { requiresAuth: true } 
+    meta: { requiresAuth: true }
   },
   {
     path: '/pay',
@@ -97,26 +97,28 @@ const router = createRouter({
   routes
 })
 
+
 router.beforeEach((to, from, next) => {
   const is_login = store.state.is_login;
-
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!is_login) {
       next('/login');
-    } else {
-      next();
+      return;
     }
   }
   else if (to.matched.some(record => record.meta.guestOnly)) {
     if (is_login) {
       next('/');
-    } else {
-      next();
+      return;
     }
   }
-  else {
-    next();
+
+  
+  if (from.name === 'chat') {
+    store.dispatch("updateIsChat", -1);
+    console.log("level chat");
   }
+  next();
 });
 
 export default router

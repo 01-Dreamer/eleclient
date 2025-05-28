@@ -78,7 +78,7 @@ export default {
       if (!store.state.is_login) {
         getCaptchaImg();
       }
-    }, 10);
+    }, 100);
 
     // 处理登录
     const handleLogin = () => {

@@ -33,8 +33,6 @@ export default {
         complete: function (xhr) {
           switch (xhr.status) {
             case 200: {
-              const refresh_token = xhr.responseJSON.userRefreshToken;
-              console.log("refresh_token:", refresh_token);
               store.dispatch("login", {
                 id: xhr.responseJSON.userId,
                 email: xhr.responseJSON.email,
@@ -47,22 +45,19 @@ export default {
               break;
             }
             case 401: {
-              localStorage.setItem('refresh_token', refresh_token);
+              localStorage.removeItem('refresh_token');
               console.log("unauthorized");
               break;
             }
             case 0: {
-              localStorage.setItem('refresh_token', refresh_token);
               console.error("failed to connect network");
               break;
             }
             case 500: {
-              localStorage.setItem('refresh_token', refresh_token);
               console.error("server is busy");
               break;
             }
             default: {
-              localStorage.setItem('refresh_token', refresh_token);
               console.error("unknown_status:", xhr.status, xhr.responseText);
             }
           }
