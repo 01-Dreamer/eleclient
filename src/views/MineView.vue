@@ -114,7 +114,7 @@ export default {
         formData.append('file', file);
 
         $.ajax({
-          url: 'http://localhost:12345/uploadAvatar',
+          url: 'http://localhost:12345/updateAvatar',
           type: 'POST',
           headers: {
             'Authorization': `Bearer ${store.state.access_token}`
@@ -133,10 +133,11 @@ export default {
           },
           error: (error) => {
             showInfoToUser("头像上传失败", "error");
-            console.error("failed to upload: ", error);
+            console.error("failed to update avatar: ", error);
           }
         });
       };
+
       document.body.appendChild(input);
       input.click();
       document.body.removeChild(input);
@@ -173,13 +174,22 @@ export default {
             showInfoToUser("定位失败", "error");
             console.error("failed to get location: ", error);
           }
+        })
+      })
+        .catch(() => {
+          console.log("location change cancelled");
         });
-      });
 
     };
 
     const goToMyStore = () => {
-      console.log('前往我的店铺');
+      const id = store.state.id;
+      router.push({
+        name: "business",
+        params: {
+          id
+        }
+      })
     };
 
     const changeUser = () => {

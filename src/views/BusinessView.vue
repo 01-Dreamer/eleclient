@@ -3,27 +3,27 @@
     商家信息
   </HeaderBase>
 
-  <div class="business-logo">
-    <img src="../img/sj01.png">
+  <div class="business-logo" @click="updateStoreCover">
+    <img :src="store_cover">
   </div>
 
-  <div class="business-info">
-    <h1>万家饺子（软件园E18店）</h1>
-    <p>&#165;15起送 &#165;3配送</p>
-    <p>各种饺子炒菜</p>
-    <el-button type="primary" size="small" @click="clickContact" v-show="self_id !== other_id" class="contact-btn">
+  <div class="business-info" @click="updateStoreText">
+    <h1>{{ store_name }}</h1>
+    <p>&#165;15起送 &#165;3配送&nbsp;&nbsp;16km&nbsp;|&nbsp;10分钟</p>
+    <p>{{ store_description }}</p>
+    <el-button type="primary" size="small" @click="clickContact" class="contact-btn">
       联系商家
     </el-button>
   </div>
 
-  <ul class="food">
-    <li>
+  <ul class="food" ref="item_container" :style="{ 'margin-bottom': self_id === other_id ? '15vw' : '28vw' }">
+    <li v-for="(item, index) in items" :key="index">
       <div class="food-left">
-        <img src="../img/sp01.png">
-        <div class="food-left-info">
-          <h3>纯肉鲜肉（水饺）</h3>
-          <p>新鲜猪肉</p>
-          <p>&#165;15</p>
+        <img :src="item.cover" @click="updateItemCover(item.id)">
+        <div class="food-left-info" @click="updateItemText(item.id)">
+          <h3>{{ item.name }}</h3>
+          <p>{{ item.description }}</p>
+          <p>&#165;{{ item.price }}</p>
         </div>
       </div>
       <div class="food-right">
@@ -36,118 +36,24 @@
         </div>
       </div>
     </li>
-    <li>
-      <div class="food-left">
-        <img src="../img/sp02.png">
-        <div class="food-left-info">
-          <h3>玉米鲜肉（水饺）</h3>
-          <p>玉米鲜肉</p>
-          <p>&#165;16</p>
-        </div>
-      </div>
-      <div class="food-right">
-        <div>
-          <i class="fa fa-minus-circle"></i>
-        </div>
-        <p><span>2</span></p>
-        <div>
-          <i class="fa fa-plus-circle"></i>
-        </div>
-      </div>
-    </li>
-    <li>
-      <div class="food-left">
-        <img src="../img/sp03.png">
-        <div class="food-left-info">
-          <h3>虾仁三鲜（蒸饺）</h3>
-          <p>虾仁三鲜</p>
-          <p>&#165;22</p>
-        </div>
-      </div>
-      <div class="food-right">
-        <div>
-        </div>
-        <p></p>
-        <div>
-          <i class="fa fa-plus-circle"></i>
-        </div>
-      </div>
-    </li>
-    <li>
-      <div class="food-left">
-        <img src="../img/sp04.png">
-        <div class="food-left-info">
-          <h3>素三鲜（蒸饺）</h3>
-          <p>素三鲜</p>
-          <p>&#165;15</p>
-        </div>
-      </div>
-      <div class="food-right">
-        <div>
-        </div>
-        <p></p>
-        <div>
-          <i class="fa fa-plus-circle"></i>
-        </div>
-      </div>
-    </li>
-    <li>
-      <div class="food-left">
-        <img src="../img/sp05.png">
-        <div class="food-left-info">
-          <h3>角瓜鸡蛋（蒸饺）</h3>
-          <p>角瓜鸡蛋</p>
-          <p>&#165;16</p>
-        </div>
-      </div>
-      <div class="food-right">
-        <div>
-        </div>
-        <p></p>
-        <div>
-          <i class="fa fa-plus-circle"></i>
-        </div>
-      </div>
-    </li>
-    <li>
-      <div class="food-left">
-        <img src="../img/sp06.png">
-        <div class="food-left-info">
-          <h3>小白菜肉（水饺）</h3>
-          <p>小白菜肉</p>
-          <p>&#165;18</p>
-        </div>
-      </div>
-      <div class="food-right">
-        <div>
-        </div>
-        <p></p>
-        <div>
-          <i class="fa fa-plus-circle"></i>
-        </div>
-      </div>
-    </li>
-    <li>
-      <div class="food-left">
-        <img src="../img/sp07.png">
-        <div class="food-left-info">
-          <h3>芹菜牛肉（水饺）</h3>
-          <p>芹菜牛肉</p>
-          <p>&#165;18</p>
-        </div>
-      </div>
-      <div class="food-right">
-        <div>
-        </div>
-        <p></p>
-        <div>
-          <i class="fa fa-plus-circle"></i>
-        </div>
-      </div>
-    </li>
+
+
+    <div class="add-btn">
+      <el-button type="success" class="add-item-btn" @click="addItem">
+        <span>添加商品</span>
+      </el-button>
+    </div>
+
+
+
   </ul>
 
-  <div class="cart">
+
+
+
+
+
+  <div class="cart" v-show="false">
     <div class="cart-left">
       <div class="cart-left-icon">
         <i class="fa fa-shopping-cart"></i>
@@ -159,7 +65,7 @@
       </div>
     </div>
     <div class="cart-right">
-      <div class="cart-right-item" onclick="location.href='order.html'">
+      <div class="cart-right-item">
         去结算
       </div>
     </div>
@@ -176,7 +82,11 @@ import HeaderBase from "@/components/HeaderBase.vue";
 import { useRoute } from 'vue-router';
 import store from '@/store';
 import router from '@/router';
-import { ref } from 'vue';
+import { reactive, ref, nextTick } from 'vue';
+import { ElMessageBox } from 'element-plus';
+import { showInfoToUser } from '@/utils/notice';
+import $ from 'jquery';
+
 
 export default {
   name: "BusinessView",
@@ -188,7 +98,318 @@ export default {
   setup() {
     const route = useRoute();
     const self_id = String(store.state.id);
-    const other_id = ref(String(route.params.id));
+    const other_id = String(route.params.id);
+
+    const store_cover = ref(require('../img/sj01.png'));
+    const store_name = ref("万家饺子（软件园E18店）");
+    const store_description = ref("各种饺子炒菜");
+
+    const item_container = ref(null);
+    const scrollToBottom = () => {
+      nextTick(() => {
+        const container = item_container.value;
+        if (container) {
+          container.scrollTop = container.scrollHeight;
+        }
+      });
+    };
+
+
+    const items = ref([]);
+    items.value.push(reactive({
+      id: 1,
+      name: "水饺",
+      description: "好吃",
+      cover: "https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/DefaultAvatar.png",
+      price: 99.25
+    }));
+
+    items.value.push(reactive({
+      id: 2,
+      name: "螺蛳粉",
+      description: "特辣",
+      cover: "https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/DefaultAvatar.png",
+      price: 77.35
+    }));
+
+
+
+
+    const updateStoreCover = () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/png, image/jpeg';
+      input.style.display = 'none';
+
+      input.onchange = () => {
+        const file = input.files[0];
+        if (!file) return;
+
+        const allowedTypes = ['image/png', 'image/jpeg'];
+        if (!allowedTypes.includes(file.type)) {
+          showInfoToUser("只支持上传 PNG 或 JPG 格式的图片", "warning");
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+
+        $.ajax({
+          url: 'http://localhost:12345/updateStoreCover',
+          type: 'POST',
+          headers: {
+            'Authorization': `Bearer ${store.state.access_token}`
+          },
+          data: formData,
+          processData: false,
+          contentType: false,
+          success: (data) => {
+            if (data) {
+              showInfoToUser("图片上传成功", "success");
+              store_cover.value = data;
+              console.log("img url: ", data);
+            } else {
+              showInfoToUser("图片上传失败", "error");
+            }
+          },
+          error: (error) => {
+            showInfoToUser("图片上传失败", "error");
+            console.error("failed to update img: ", error);
+          }
+        });
+      };
+
+      document.body.appendChild(input);
+      input.click();
+      document.body.removeChild(input);
+    }
+
+    const updateStoreText = () => {
+      ElMessageBox({
+        title: '编辑商家信息',
+        customClass: 'custom-message-box',
+        message: `
+      <div>
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px;">商家名称</label>
+          <input id="editStoreName" value="${store_name.value}" 
+                 style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;"
+                 placeholder="请输入商家名称">
+        </div>
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px;">商家描述</label>
+          <textarea id="editStoreDesc" 
+                    style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px; min-height: 60px;"
+                    placeholder="请输入商家描述">${store_description.value}</textarea>
+        </div>
+      </div>
+    `,
+        dangerouslyUseHTMLString: true,
+        showCancelButton: true,
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
+        beforeClose: (action, instance, done) => {
+          if (action === 'confirm') {
+            const name = document.getElementById('editStoreName').value.trim();
+            const description = document.getElementById('editStoreDesc').value.trim();
+
+            if (!name) {
+              showInfoToUser("商家名称不能为空", "error");
+              instance.confirmButtonLoading = false;
+              return false;
+            }
+
+            if (!description) {
+              showInfoToUser("商家描述不能为空", "error");
+              instance.confirmButtonLoading = false;
+              return false;
+            }
+
+            console.log('修改后的商家信息:', {
+              name,
+              description
+            });
+
+            store_name.value = name;
+            store_description.value = description;
+            done();
+          } else {
+            done();
+          }
+        }
+      }).catch(() => {
+        console.log('store text update cancelled');
+      });
+    };
+
+
+
+
+
+    const getItem = (item_id) => {
+      return items.value.find(i => i.id === item_id);
+    };
+
+    const modifyItemCover = (item_id, cover) => {
+      const item = getItem(item_id);
+      if (item) {
+        item.cover = cover;
+      }
+    };
+
+    const modifyItemText = (item_id, name, description, price) => {
+      const item = getItem(item_id);
+      if (item) {
+        item.name = name;
+        item.description = description;
+        item.price = price;
+      }
+    }
+
+
+
+
+
+    const updateItemCover = (item_id) => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/png, image/jpeg';
+      input.style.display = 'none';
+
+      input.onchange = () => {
+        const file = input.files[0];
+        if (!file) return;
+
+        const allowedTypes = ['image/png', 'image/jpeg'];
+        if (!allowedTypes.includes(file.type)) {
+          showInfoToUser("只支持上传 PNG 或 JPG 格式的图片", "warning");
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+
+        $.ajax({
+          url: 'http://localhost:12345/updateItemCover',
+          type: 'POST',
+          headers: {
+            'Authorization': `Bearer ${store.state.access_token}`
+          },
+          data: formData,
+          processData: false,
+          contentType: false,
+          success: (data) => {
+            if (data) {
+              showInfoToUser("图片上传成功", "success");
+              modifyItemCover(item_id, data);
+              console.log("img url: ", data);
+            } else {
+              showInfoToUser("图片上传失败", "error");
+            }
+          },
+          error: (error) => {
+            showInfoToUser("图片上传失败", "error");
+            console.error("failed to update img: ", error);
+          }
+        });
+      };
+
+      document.body.appendChild(input);
+      input.click();
+      document.body.removeChild(input);
+    };
+
+
+    const updateItemText = (item_id) => {
+      const item = getItem(item_id);
+      if (!item) return;
+
+      ElMessageBox({
+        title: '编辑商品信息',
+        customClass: 'custom-message-box',
+        message: `
+      <div>
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px;">商品名称</label>
+          <input id="editName" value="${item.name}" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+        </div>
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px;">商品描述</label>
+          <textarea id="editDesc" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px; min-height: 60px;">${item.description}</textarea>
+        </div>
+        <div>
+          <label style="display: block; margin-bottom: 5px;">商品价格</label>
+          <input id="editPrice" type="number" step="0.01" min="0" value="${item.price}" 
+                style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+        </div>
+      </div>
+    `,
+        dangerouslyUseHTMLString: true,
+        showCancelButton: true,
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
+        beforeClose: (action, instance, done) => {
+          if (action === 'confirm') {
+            const name = document.getElementById('editName').value;
+            const description = document.getElementById('editDesc').value;
+            const priceStr = document.getElementById('editPrice').value;
+            const price = parseFloat(priceStr);
+
+            if (!name) {
+              showInfoToUser("商品名称不能为空", "error");
+              instance.confirmButtonLoading = false;
+              return false;
+            }
+
+            if (!description) {
+              showInfoToUser("商品描述不能为空", "error");
+              instance.confirmButtonLoading = false;
+              return false;
+            }
+
+
+
+            if (isNaN(price) || price < 0 || !/^\d+(\.\d{1,2})?$/.test(priceStr)) {
+              showInfoToUser("非法价格", "error");
+              instance.confirmButtonLoading = false;
+              return false;
+            }
+            modifyItemText(item_id, name, description, price);
+            done();
+          } else {
+            done();
+          }
+        }
+      }).catch(() => {
+        console.log('item text update cancelled');
+      });
+    };
+
+
+
+
+    const addItem = () => {
+      items.value.push(reactive({
+        id: 2,
+        name: "螺蛳粉",
+        description: "特辣",
+        cover: "https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/DefaultAvatar.png",
+        price: 77.35
+      }));
+      scrollToBottom();
+    }
+
+
+
+
+
+
+
+
+
+
 
     const clickContact = () => {
       router.push({
@@ -205,8 +426,18 @@ export default {
     return {
       self_id,
       other_id,
+      store_cover,
+      store_name,
+      store_description,
+      item_container,
+      items,
 
-      clickContact,
+      updateStoreCover,
+      updateStoreText,
+      updateItemCover,
+      updateItemText,
+      addItem,
+      clickContact
     }
   }
 }
@@ -229,6 +460,8 @@ export default {
   width: 40vw;
   height: 30vw;
   border-radius: 5px;
+
+  cursor: pointer;
 }
 
 .business-info {
@@ -239,6 +472,8 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+
+  cursor: pointer;
 }
 
 .business-info h1 {
@@ -263,10 +498,12 @@ export default {
 .food {
   width: 100%;
   margin-top: 0;
-  margin-bottom: 28vw;
-
   padding-left: 0;
+
+  overflow-y: auto;
+  max-height: 60vh;
 }
+
 
 .food li {
   width: 100%;
@@ -288,10 +525,14 @@ export default {
 .food li .food-left img {
   width: 20vw;
   height: 20vw;
+
+  cursor: pointer;
 }
 
 .food li .food-left .food-left-info {
   margin-left: 3vw;
+
+  cursor: pointer;
 }
 
 .food li .food-left .food-left-info h3 {
@@ -414,5 +655,17 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.add-btn {
+  width: 100%;
+}
+
+.add-item-btn {
+  width: 100%;
+  height: 3vw;
+  font-size: 4vw;
+  text-align: center;
+  border-radius: 4px;
 }
 </style>

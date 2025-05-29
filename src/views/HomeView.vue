@@ -105,7 +105,7 @@
             <i class="fa fa-star"></i>
             <i class="fa fa-star"></i>
             <i class="fa fa-star"></i>
-            <span>4.9&nbsp;&nbsp;月售345单</span>
+            <span>4.9&nbsp;&nbsp;销量345单</span>
           </div>
           <div class="business-info-star-right">
             蜂鸟专送

@@ -15,7 +15,7 @@ export default createStore({
     latitude: -999,
     location_text: "",
 
-    is_login: false,
+    is_login: true,
 
     socket: null,
     is_chat: -1,
@@ -81,17 +81,6 @@ export default createStore({
     },
 
     logout(state) {
-
-      if (state.socket) {
-        try {
-          state.socket.close(1000, "user logout");
-          console.log("websocket close");
-        } catch (error) {
-          console.error("failed to close websocket: ", error);
-        }
-        state.socket = null;
-      }
-
       state.id = -1;
       state.email = "";
       state.refresh_token = "";
@@ -193,6 +182,16 @@ export default createStore({
         });
       }
 
+      // 关闭websokcet连接
+      if (context.state.socket) {
+        try {
+          context.state.socket.close(1000, "user logout");
+          console.log("websocket close");
+        } catch (error) {
+          console.error("failed to close websocket: ", error);
+        }
+      }
+
       context.commit("logout");
 
     },
@@ -238,16 +237,12 @@ export default createStore({
 
         _socket.onclose = function () {
           console.log("websocket close");
-          setTimeout(() => {
-            context.commit("updateSocket", null);
-          }, 1000);
+          context.commit("updateSocket", null);
         };
 
         _socket.onerror = function (error) {
           console.error("websocket error:", error);
-          setTimeout(() => {
-            context.commit("updateSocket", null);
-          }, 1000);
+          context.commit("updateSocket", null);
         };
 
       });
