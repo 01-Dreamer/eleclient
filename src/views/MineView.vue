@@ -35,7 +35,7 @@
     </div>
 
     <div class="mine-info-item full-width">
-      <el-button type="primary" @click="goToStore" class="action-btn">
+      <el-button type="primary" @click="goToMyStore" class="action-btn">
         <el-icon>
           <Shop />
         </el-icon>
@@ -43,14 +43,24 @@
       </el-button>
     </div>
 
-    <div class="mine-info-item full-width">
-      <el-button type="danger" @click="logout" class="action-btn">
+    <div class="footer">
+      <el-button type="warning" @click="changeUser" class="action-btn">
         <el-icon>
-          <SwitchButton />
+          <RefreshRight />
         </el-icon>
-        <span>退出登录</span>
+        <span>切换账号</span>
       </el-button>
+      <div class="mine-info-item full-width">
+        <el-button type="danger" @click="logout" class="action-btn">
+          <el-icon>
+            <SwitchButton />
+          </el-icon>
+          <span>退出登录</span>
+        </el-button>
+      </div>
     </div>
+
+
   </div>
 </template>
 
@@ -66,6 +76,7 @@ import {
   Camera,
   Location,
   Shop,
+  RefreshRight,
   SwitchButton
 } from '@element-plus/icons-vue';
 
@@ -77,6 +88,7 @@ export default {
     Camera,
     Location,
     Shop,
+    RefreshRight,
     SwitchButton
   },
 
@@ -154,7 +166,7 @@ export default {
                 latitude: data.latitude,
                 location_text: value.trim()
               });
-              console.log("pasition: ", data);
+              console.log("position: ", data);
             }
           },
           error: (error) => {
@@ -166,12 +178,19 @@ export default {
 
     };
 
-    const goToStore = () => {
+    const goToMyStore = () => {
       console.log('前往我的店铺');
     };
 
+    const changeUser = () => {
+      store.dispatch("logout", false);
+      router.push({
+        name: "login",
+      })
+    };
+
     const logout = () => {
-      store.dispatch("logout");
+      store.dispatch("logout", true);
       localStorage.removeItem('refresh_token');
       router.push({
         name: "login",
@@ -184,7 +203,8 @@ export default {
 
       changeAvatar,
       changeLocation,
-      goToStore,
+      goToMyStore,
+      changeUser,
       logout
     };
   }
@@ -251,5 +271,9 @@ export default {
 .action-btn {
   width: 100%;
   margin-top: 2vw;
+}
+
+.footer {
+  margin-top: 60vw;
 }
 </style>

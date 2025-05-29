@@ -1,6 +1,6 @@
 <template>
   <HeaderBase>
-    商家信息:{{ other_id }}
+    商家信息
   </HeaderBase>
 
   <div class="business-logo">
@@ -195,7 +195,10 @@ export default {
         name: "chat",
         params: {
           other_id
-        }
+        },
+        query: {
+          store_name: "饺子店"
+        },
       })
     };
 

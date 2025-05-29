@@ -91,11 +91,11 @@
 
 
   <ul class="business">
-    <li>
-      <img src="../img/sj01.png">
+    <li v-for="business in businesses" :key="business.id" @click="clickBusiness(business.id)">
+      <img :src="business.store_cover">
       <div class="business-info">
         <div class="business-info-h">
-          <h3>万家饺子（软件园E18店）</h3>
+          <h3>{{ business.store_name }}</h3>
           <div class="business-info-like">&#8226;</div>
         </div>
         <div class="business-info-star">
@@ -113,10 +113,10 @@
         </div>
         <div class="business-info-delivery">
           <span>&#165;15起送 | &#165;3配送</span>
-          <span>3.22km | 30分钟</span>
+          <span>{{ business.distance }}km | {{ business.duration }}分钟</span>
         </div>
         <div class="business-info-explain">
-          <div>各种饺子</div>
+          <div>{{ business.store_description }}</div>
         </div>
         <div class="business-info-promotion">
           <div class="business-info-promotion-left">
@@ -138,6 +138,7 @@
     </li>
   </ul>
 
+
 </template>
 
 
@@ -147,6 +148,7 @@ import { Search } from '@element-plus/icons-vue';
 import { ElInput, ElIcon } from 'element-plus';
 import { showInfoToUser } from '@/utils/notice';
 import store from '@/store';
+import router from '@/router';
 import { ref } from 'vue';
 import $ from 'jquery';
 
@@ -162,7 +164,37 @@ export default {
 
 
   setup() {
+
     const location = ref(store.state.location_text);
+
+    const businesses = [
+      {
+        id: 1,
+        store_cover: require('../img/sj01.png'),
+        store_name: '万家饺子（软件园E18店）',
+        store_description: '各种饺子炒菜',
+        distance: 16,
+        duration: 10,
+      },
+      {
+        id: 2,
+        store_cover: require('../img/sj02.png'),
+        store_name: '小锅饭豆腐馆（全运店）',
+        store_description: '特色美食',
+        distance: 16,
+        duration: 10,
+      }
+    ];
+
+    const clickBusiness = (id) => {
+      store.dispatch("clearMsgCount", id);
+      router.push({
+        name: "business",
+        params: {
+          id
+        }
+      })
+    };
 
 
     const search_input = ref('');
@@ -230,11 +262,12 @@ export default {
 
 
     return {
+      businesses,
       location,
       Search,
       search_input,
 
-
+      clickBusiness,
       searchFunction,
       handleSort,
       getPosition,

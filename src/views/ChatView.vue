@@ -1,6 +1,6 @@
 <template>
   <HeaderBase>
-    聊天: {{ other_id }}
+    {{ other_name }}
   </HeaderBase>
 
   <div class="chat-wrapper">
@@ -45,9 +45,10 @@ export default {
     const route = useRoute();
 
     const self_id = store.state.id;
-    const other_id = ref(route.params.id);
-    const self_avatar = computed(() => store.state.avatar);
-    const other_avatar = ref('');
+    const other_id = route.params.id;
+    const other_name = route.query.store_name;
+    const self_avatar = store.state.avatar;
+    const other_avatar = ref("");
 
     const input = ref('');
     const messages = ref([]);
@@ -55,8 +56,8 @@ export default {
 
     let socket = computed(() => store.state.socket);
 
-    store.dispatch("updateIsChat", other_id.value);
-    console.log("enter chat, id=", other_id.value);
+    store.dispatch("updateIsChat", other_id);
+    console.log("enter chat, id=", other_id);
 
     // 添加消息
     const addMessage = (message) => {
@@ -67,7 +68,7 @@ export default {
       let type = null;
       if (String(sender_id) === String(self_id)) {
         type = "me";
-      } else if (String(sender_id) === String(other_id.value)) {
+      } else if (String(sender_id) === String(other_id)) {
         type = "other";
       } else {
         console.log("failed to parse message:", message);
@@ -90,14 +91,14 @@ export default {
 
     // 请求获取对方头像
     $.ajax({
-      url: 'http://localhost:12345/getOtherAvatar?id=' + other_id.value,
+      url: 'http://localhost:12345/getOtherAvatar?id=' + other_id,
       type: 'GET',
       headers: {
         'Authorization': `Bearer ${store.state.access_token}`
       },
       success: (data) => {
         if (data === "") {
-          console.error("the avatar is null, id=", other_id.value);
+          console.error("the avatar is null, id=", other_id);
         } else {
           other_avatar.value = data;
           console.log("other avatar:", data);
@@ -126,7 +127,7 @@ export default {
 
     const handleSend = () => {
       if (!input.value.trim()) return;
-      if (String(self_id) === String(other_id.value)) {
+      if (String(self_id) === String(other_id)) {
         const content = input.value.trim();
 
         // 自己和自己聊天，获取本地时间即可
@@ -154,8 +155,8 @@ export default {
       }
 
       const message = {
-        senderId: store.state.id,
-        receiverId: other_id.value,
+        senderId: self_id,
+        receiverId: other_id,
         content: input.value,
       };
       socket.value.send(JSON.stringify(message));
@@ -166,7 +167,7 @@ export default {
     // 获取历史聊天记录
     if (String(self_id) !== String(other_id)) {
       $.ajax({
-        url: 'http://localhost:12345/getChatMessage?id1=' + self_id + '&id2=' + other_id.value,
+        url: 'http://localhost:12345/getChatMessage?id1=' + self_id + '&id2=' + other_id,
         type: 'GET',
         headers: {
           'Authorization': `Bearer ${store.state.access_token}`
@@ -193,6 +194,7 @@ export default {
 
     return {
       other_id,
+      other_name,
       input,
       messages,
       chat_container,

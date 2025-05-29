@@ -82,6 +82,16 @@ export default createStore({
 
     logout(state) {
 
+      if (state.socket) {
+        try {
+          state.socket.close(1000, "user logout");
+          console.log("websocket close");
+        } catch (error) {
+          console.error("failed to close websocket: ", error);
+        }
+        state.socket = null;
+      }
+
       state.id = -1;
       state.email = "";
       state.refresh_token = "";
@@ -89,45 +99,6 @@ export default createStore({
       state.is_login = false;
       state.tokenInterval = null;
     },
-
-    createWebsocket(state) {
-      $(document).ready(function () {
-
-        const _socket = new WebSocket(`ws://localhost:12345/chat?token=${state.access_token}`);
-        _socket.onopen = function () {
-          console.log("websocket connect");
-          state.socket = _socket;
-        };
-
-        _socket.onmessage = function (event) {
-          const message = JSON.parse(event.data);
-          const key = message.senderId;
-          if (String(key) === String(state.is_chat) || String(key) === String(state.id)) {
-            return;
-          }
-          const map = new Map(state.msg_count);
-          const value = map.get(key) || 0;
-          map.set(key, value + 1);
-          state.msg_count = map;
-        };
-
-        _socket.onclose = function () {
-          console.log("websocket close");
-          setTimeout(() => {
-            state.socket = null;
-          }, 100);
-        };
-
-        _socket.onerror = function (error) {
-          console.error("websocket error:", error);
-          setTimeout(() => {
-            state.socket = null;
-          }, 100);
-        };
-
-      });
-    }
-
 
   },
   actions: {
@@ -178,7 +149,7 @@ export default createStore({
 
       refreshToken();
       setTimeout(() => {
-        context.commit("createWebsocket");
+        context.dispatch('createWebsocket');
       }, 1000);
       const tokenInterval = setInterval(() => {
         refreshToken();
@@ -187,38 +158,40 @@ export default createStore({
       context.commit("updateTokenInterval", tokenInterval);
     },
 
-    logout(context) {
+    logout(context, isTokenBlack) {
 
-      $.ajax({
-        url: 'http://localhost:12345/logout',
-        type: 'POST',
-        headers: {
-          'Authorization': `Bearer ${context.state.refresh_token}`
-        },
-        complete: function (xhr) {
-          switch (xhr.status) {
-            case 200: {
-              console.log("success to logout");
-              break;
-            }
-            case 401: {
-              console.error("error:", xhr.responseJSON.error);
-              break;
-            }
-            case 0: {
-              console.error("network connection failed");
-              break;
-            }
-            case 500: {
-              console.error("server is busy");
-              break;
-            }
-            default: {
-              console.error("unknown_status:", xhr.status, xhr.responseText);
+      if (isTokenBlack) {
+        $.ajax({
+          url: 'http://localhost:12345/logout',
+          type: 'POST',
+          headers: {
+            'Authorization': `Bearer ${context.state.refresh_token}`
+          },
+          complete: function (xhr) {
+            switch (xhr.status) {
+              case 200: {
+                console.log("the refresh token has been successfully added to the blacklist");
+                break;
+              }
+              case 401: {
+                console.error("error:", xhr.responseJSON.error);
+                break;
+              }
+              case 0: {
+                console.error("network connection failed");
+                break;
+              }
+              case 500: {
+                console.error("server is busy");
+                break;
+              }
+              default: {
+                console.error("unknown_status:", xhr.status, xhr.responseText);
+              }
             }
           }
-        }
-      });
+        });
+      }
 
       context.commit("logout");
 
@@ -249,8 +222,38 @@ export default createStore({
     },
 
     createWebsocket(context) {
-      context.commit("createWebsocket");
+      $(document).ready(function () {
+
+        const _socket = new WebSocket(`ws://localhost:12345/chat?token=${context.state.access_token}`);
+        _socket.onopen = function () {
+          console.log("websocket connect");
+          context.commit("updateSocket", _socket);
+        };
+
+        _socket.onmessage = function (event) {
+          const message = JSON.parse(event.data);
+          const key = message.senderId;
+          context.commit("addMsgCount", key);
+        };
+
+        _socket.onclose = function () {
+          console.log("websocket close");
+          setTimeout(() => {
+            context.commit("updateSocket", null);
+          }, 1000);
+        };
+
+        _socket.onerror = function (error) {
+          console.error("websocket error:", error);
+          setTimeout(() => {
+            context.commit("updateSocket", null);
+          }, 1000);
+        };
+
+      });
     }
+
+
 
   },
   modules: {

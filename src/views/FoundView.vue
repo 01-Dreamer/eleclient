@@ -6,15 +6,15 @@
   <ul class="business-list">
     <li v-for="business in businesses" :key="business.id" @click="clickBusiness(business.id)">
       <div class="business-img">
-        <img :src="business.img_url">
+        <img :src="business.store_cover">
         <div class="business-img-quantity" v-if="getMsgCount(business.id) > 0">
           {{ getMsgCount(business.id) }}
         </div>
       </div>
       <div class="business-info">
-        <h3>{{ business.business_name }}</h3>
+        <h3>{{ business.store_name }}</h3>
         <p>&#165;15起送 | &#165;3配送</p>
-        <p>{{ business.business_description }}</p>
+        <p>{{ business.store_description }}</p>
       </div>
     </li>
   </ul>
@@ -37,7 +37,7 @@ export default {
 
   setup() {
     const msg_count = computed(() => store.state.msg_count);
-    const getMsgCount = (id)=>{
+    const getMsgCount = (id) => {
       return msg_count.value.get(id) || 0;
     };
 
@@ -45,67 +45,18 @@ export default {
       {
         id: 1,
         chat_quantity: ref(msg_count.value.get(1) || 0),
-        img_url: require('../img/sj01.png'),
-        business_name: '万家饺子（软件园E18店）',
-        business_description: '各种饺子炒菜',
+        store_cover: require('../img/sj01.png'),
+        store_name: '万家饺子（软件园E18店）',
+        store_description: '各种饺子炒菜',
       },
       {
         id: 2,
         chat_quantity: ref(msg_count.value.get(2) || 0),
-        img_url: require('../img/sj02.png'),
-        business_name: '小锅饭豆腐馆（全运店）',
-        business_description: '特色美食',
-      },
-      {
-        id: 3,
-        chat_quantity: ref(0),
-        img_url: require('../img/sj03.png'),
-        business_name: '麦当劳麦乐送（全运路店）',
-        business_description: '汉堡薯条',
-      },
-      {
-        id: 4,
-        chat_quantity: ref(0),
-        img_url: require('../img/sj04.png'),
-        business_name: '米村拌饭（浑南店）',
-        business_description: '各种炒菜拌饭',
-      },
-      {
-        id: 5,
-        chat_quantity: ref(0),
-        img_url: require('../img/sj05.png'),
-        business_name: '申记串道（中海康城店）',
-        business_description: '烤串炸串',
-      },
-      {
-        id: 6,
-        chat_quantity: ref(0),
-        img_url: require('../img/sj06.png'),
-        business_name: '半亩良田排骨米饭',
-        business_description: '排骨米饭套餐',
-      },
-      {
-        id: 7,
-        chat_quantity: ref(0),
-        img_url: require('../img/sj07.png'),
-        business_name: '茶兮鲜果饮品（国际软件园店）',
-        business_description: '甜品饮品',
-      },
-      {
-        id: 8,
-        chat_quantity: ref(0),
-        img_url: require('../img/sj08.png'),
-        business_name: '唯一水果捞（软件园E18店）',
-        business_description: '新鲜水果',
-      },
-      {
-        id: 9,
-        chat_quantity: ref(0),
-        img_url: require('../img/sj09.png'),
-        business_name: '满园春饼（全运路店）',
-        business_description: '各种春饼',
-      },
-    ]
+        store_cover: require('../img/sj02.png'),
+        store_name: '小锅饭豆腐馆（全运店）',
+        store_description: '特色美食',
+      }
+    ];
 
     const clickBusiness = (id) => {
       store.dispatch("clearMsgCount", id);
