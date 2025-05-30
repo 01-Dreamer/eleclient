@@ -3,30 +3,42 @@
     商家信息
   </HeaderBase>
 
-  <div class="business-logo" @click="updateStoreCover">
+  <div class="business-logo" @click="self_id === other_id ? updateStoreCover() : null"
+    :style="{ 'cursor': self_id === other_id ? 'pointer' : 'default' }">
     <img :src="store_cover">
   </div>
 
-  <div class="business-info" @click="updateStoreText">
+  <div class="business-info" @click="self_id === other_id ? updateStoreText() : null"
+    :style="{ 'cursor': self_id === other_id ? 'pointer' : 'default' }">
     <h1>{{ store_name }}</h1>
     <p>&#165;15起送 &#165;3配送&nbsp;&nbsp;16km&nbsp;|&nbsp;10分钟</p>
     <p>{{ store_description }}</p>
-    <el-button type="primary" size="small" @click="clickContact" class="contact-btn">
+    <el-button type="primary" size="small" class="contact-btn" :disabled="self_id === other_id" @click="clickContact">
       联系商家
     </el-button>
   </div>
 
   <ul class="food" ref="item_container" :style="{ 'margin-bottom': self_id === other_id ? '15vw' : '28vw' }">
-    <li v-for="(item, index) in items" :key="index">
+    <li v-for="item in items" :key="item.id">
       <div class="food-left">
-        <img :src="item.cover" @click="updateItemCover(item.id)">
-        <div class="food-left-info" @click="updateItemText(item.id)">
+        <img :src="item.cover" @click="self_id === other_id ? updateItemCover(item.id) : null"
+          :style="{ 'cursor': self_id === other_id ? 'pointer' : 'default' }">
+        <div class="food-left-info" @click="self_id === other_id ? updateItemText(item.id) : null"
+          :style="{ 'cursor': self_id === other_id ? 'pointer' : 'default' }">
           <h3>{{ item.name }}</h3>
           <p>{{ item.description }}</p>
           <p>&#165;{{ item.price }}</p>
         </div>
       </div>
-      <div class="food-right">
+
+      <el-button type="danger" circle size="small" class="del-item-btn" v-show="self_id === other_id"
+        @click="delItem(item.id)">
+        <el-icon>
+          <delete />
+        </el-icon>
+      </el-button>
+
+      <div class="food-right" v-show="self_id !== other_id">
         <div>
           <i class="fa fa-minus-circle"></i>
         </div>
@@ -37,23 +49,15 @@
       </div>
     </li>
 
-
-    <div class="add-btn">
-      <el-button type="success" class="add-item-btn" @click="addItem">
-        <span>添加商品</span>
-      </el-button>
-    </div>
-
-
+    <el-button type="success" class="add-item-btn" v-show="self_id === other_id" @click="addItem">
+      <el-icon>
+        <plus />
+      </el-icon>
+    </el-button>
 
   </ul>
 
-
-
-
-
-
-  <div class="cart" v-show="false">
+  <div class="cart" v-show="self_id !== other_id">
     <div class="cart-left">
       <div class="cart-left-icon">
         <i class="fa fa-shopping-cart"></i>
@@ -70,10 +74,6 @@
       </div>
     </div>
   </div>
-
-
-
-
 </template>
 
 
@@ -85,6 +85,7 @@ import router from '@/router';
 import { reactive, ref, nextTick } from 'vue';
 import { ElMessageBox } from 'element-plus';
 import { showInfoToUser } from '@/utils/notice';
+import { Delete, Plus } from '@element-plus/icons-vue';
 import $ from 'jquery';
 
 
@@ -93,6 +94,8 @@ export default {
 
   components: {
     HeaderBase,
+    Delete,
+    Plus
   },
 
   setup() {
@@ -104,6 +107,7 @@ export default {
     const store_name = ref("万家饺子（软件园E18店）");
     const store_description = ref("各种饺子炒菜");
 
+    const items = ref([]);
     const item_container = ref(null);
     const scrollToBottom = () => {
       nextTick(() => {
@@ -113,27 +117,6 @@ export default {
         }
       });
     };
-
-
-    const items = ref([]);
-    items.value.push(reactive({
-      id: 1,
-      name: "水饺",
-      description: "好吃",
-      cover: "https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/DefaultAvatar.png",
-      price: 99.25
-    }));
-
-    items.value.push(reactive({
-      id: 2,
-      name: "螺蛳粉",
-      description: "特辣",
-      cover: "https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/DefaultAvatar.png",
-      price: 77.35
-    }));
-
-
-
 
     const updateStoreCover = () => {
       const input = document.createElement('input');
@@ -165,7 +148,7 @@ export default {
           processData: false,
           contentType: false,
           success: (data) => {
-            if (data) {
+            if (data !== null && data !== '') {
               showInfoToUser("图片上传成功", "success");
               store_cover.value = data;
               console.log("img url: ", data);
@@ -226,13 +209,28 @@ export default {
               return false;
             }
 
-            console.log('修改后的商家信息:', {
-              name,
-              description
+            $.ajax({
+              url: 'http://localhost:12345/updateStoreText?storeName=' + name + '&storeDescription=' + description,
+              type: 'POST',
+              headers: {
+                'Authorization': `Bearer ${store.state.access_token}`
+              },
+              success: (data) => {
+                if (data) {
+                  showInfoToUser("信息修改成功", "success");
+                } else {
+                  showInfoToUser("信息修改失败", "error");
+                }
+                store_name.value = name;
+                store_description.value = description;
+              },
+              error: (error) => {
+                showInfoToUser("信息修改失败", "error");
+                console.error("failed to update store text: ", error);
+              }
             });
 
-            store_name.value = name;
-            store_description.value = description;
+
             done();
           } else {
             done();
@@ -248,7 +246,7 @@ export default {
 
 
     const getItem = (item_id) => {
-      return items.value.find(i => i.id === item_id);
+      return items.value.find(i => String(i.id) === String(item_id));
     };
 
     const modifyItemCover = (item_id, cover) => {
@@ -289,10 +287,8 @@ export default {
 
         const formData = new FormData();
         formData.append('file', file);
-
-
         $.ajax({
-          url: 'http://localhost:12345/updateItemCover',
+          url: 'http://localhost:12345/updateStoreItemCover?itemId=' + item_id,
           type: 'POST',
           headers: {
             'Authorization': `Bearer ${store.state.access_token}`
@@ -301,7 +297,7 @@ export default {
           processData: false,
           contentType: false,
           success: (data) => {
-            if (data) {
+            if (data !== null && data !== '') {
               showInfoToUser("图片上传成功", "success");
               modifyItemCover(item_id, data);
               console.log("img url: ", data);
@@ -314,6 +310,7 @@ export default {
             console.error("failed to update img: ", error);
           }
         });
+
       };
 
       document.body.appendChild(input);
@@ -369,14 +366,45 @@ export default {
               return false;
             }
 
-
-
             if (isNaN(price) || price < 0 || !/^\d+(\.\d{1,2})?$/.test(priceStr)) {
               showInfoToUser("非法价格", "error");
               instance.confirmButtonLoading = false;
               return false;
             }
-            modifyItemText(item_id, name, description, price);
+
+            const request_url = 'http://localhost:12345/updateStoreItemText?' +
+              'itemId=' + item_id +
+              '&itemName=' + name +
+              '&itemDescription=' + description +
+              '&itemPrice=' + price;
+
+            $.ajax({
+              url: request_url,
+              type: 'POST',
+              headers: {
+                'Authorization': `Bearer ${store.state.access_token}`
+              },
+              success: (data) => {
+                if (data) {
+                  modifyItemText(item_id, name, description, price);
+                  showInfoToUser("信息修改成功", "success");
+                } else {
+                  showInfoToUser("信息修改失败", "error");
+                }
+              },
+              error: (error) => {
+                showInfoToUser("信息修改失败", "error");
+                console.error("failed to update item text: ", error);
+              }
+            });
+
+
+
+
+
+
+
+
             done();
           } else {
             done();
@@ -388,27 +416,84 @@ export default {
     };
 
 
-
-
     const addItem = () => {
-      items.value.push(reactive({
-        id: 2,
-        name: "螺蛳粉",
-        description: "特辣",
-        cover: "https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/DefaultAvatar.png",
-        price: 77.35
-      }));
-      scrollToBottom();
-    }
+      $.ajax({
+        url: 'http://localhost:12345/addStoreItem',
+        type: 'POST',
+        headers: {
+          'Authorization': `Bearer ${store.state.access_token}`
+        },
+        success: (data) => {
+          if (Number(data) !== -1) {
+
+            items.value.push(reactive({
+              id: Number(data),
+              name: "请编辑商品名称",
+              description: "请编辑商品描述",
+              cover: "",
+              price: 0.00
+            }));
+            scrollToBottom();
+
+            showInfoToUser("商品添加成功", "success");
+            console.log("item id: ", data);
+          } else {
+            showInfoToUser("商品添加失败", "error");
+          }
+        },
+        error: (error) => {
+          showInfoToUser("商品添加失败", "error");
+          console.error("failed to add item: ", error);
+        }
+      });
+    };
 
 
 
 
 
+    const delItem = (item_id) => {
+      ElMessageBox.confirm(
+        '确定要删除该商品吗?',
+        '提示',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning',
+        }
+      )
+        .then(() => {
 
 
+          $.ajax({
+            url: 'http://localhost:12345/delStoreItem?itemId=' + item_id,
+            type: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${store.state.access_token}`
+            },
+            success: (data) => {
+              if (data) {
+                const index = items.value.findIndex(i => i.id === item_id);
+                if (index !== -1) {
+                  items.value.splice(index, 1);
+                }
+                showInfoToUser("商品删除成功", "success");
+              } else {
+                showInfoToUser("商品删除", "error");
+              }
+            },
+            error: (error) => {
+              showInfoToUser("商品删除失败", "error");
+              console.error("failed to delete item: ", error);
+            }
+          });
 
 
+        })
+        .catch(() => {
+          console.log('item delete cancelled')
+        })
+    };
 
 
     const clickContact = () => {
@@ -418,10 +503,11 @@ export default {
           other_id
         },
         query: {
-          store_name: "饺子店"
+          store_name: store_name.value
         },
       })
     };
+
 
     return {
       self_id,
@@ -437,6 +523,7 @@ export default {
       updateItemCover,
       updateItemText,
       addItem,
+      delItem,
       clickContact
     }
   }
@@ -460,8 +547,6 @@ export default {
   width: 40vw;
   height: 30vw;
   border-radius: 5px;
-
-  cursor: pointer;
 }
 
 .business-info {
@@ -472,8 +557,6 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-
-  cursor: pointer;
 }
 
 .business-info h1 {
@@ -525,14 +608,10 @@ export default {
 .food li .food-left img {
   width: 20vw;
   height: 20vw;
-
-  cursor: pointer;
 }
 
 .food li .food-left .food-left-info {
   margin-left: 3vw;
-
-  cursor: pointer;
 }
 
 .food li .food-left .food-left-info h3 {
@@ -630,12 +709,16 @@ export default {
 .cart .cart-left .cart-left-info p:first-child {
   font-size: 4.5vw;
   color: #FFF;
+
   margin-top: 1vw;
+  margin-bottom: 0;
 }
 
 .cart .cart-left .cart-left-info p:last-child {
   font-size: 2.8vw;
   color: #AAA;
+
+  margin-top: 0;
 }
 
 .cart .cart-right {
@@ -657,8 +740,8 @@ export default {
   align-items: center;
 }
 
-.add-btn {
-  width: 100%;
+.del-item-btn {
+  font-size: 4vw;
 }
 
 .add-item-btn {
@@ -667,5 +750,7 @@ export default {
   font-size: 4vw;
   text-align: center;
   border-radius: 4px;
+
+  margin-top: 2vw;
 }
 </style>

@@ -334,6 +334,8 @@ header {
   align-content: center;
 
   padding-left: 0;
+
+  margin-bottom: 0;
 }
 
 .foodtype li {
@@ -454,13 +456,14 @@ header {
 .recommendtype {
   width: 100%;
   height: 5vw;
-  margin-bottom: 5vw;
+  margin-bottom: 3vw;
 
   display: flex;
   justify-content: space-around;
   align-items: center;
 
   padding-left: 0;
+  margin-top: 0;
 }
 
 .recommendtype li {

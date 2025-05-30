@@ -284,6 +284,6 @@ export default {
 }
 
 .footer {
-  margin-top: 60vw;
+  margin-top: 64vw;
 }
 </style>

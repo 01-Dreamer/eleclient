@@ -15,7 +15,7 @@ export default createStore({
     latitude: -999,
     location_text: "",
 
-    is_login: true,
+    is_login: false,
 
     socket: null,
     is_chat: -1,
@@ -29,7 +29,7 @@ export default createStore({
       state.id = user.id;
       state.email = user.email;
 
-      if ('avatar' in user && user.avatar !== null) {
+      if ('avatar' in user && user.avatar !== null && user.avatar !== '') {
         state.avatar = user.avatar;
       }
 
@@ -237,12 +237,16 @@ export default createStore({
 
         _socket.onclose = function () {
           console.log("websocket close");
-          context.commit("updateSocket", null);
+          setTimeout(() => {
+            context.commit("updateSocket", null);
+          }, 0);
         };
 
         _socket.onerror = function (error) {
           console.error("websocket error:", error);
-          context.commit("updateSocket", null);
+          setTimeout(() => {
+            context.commit("updateSocket", null);
+          }, 0);
         };
 
       });
