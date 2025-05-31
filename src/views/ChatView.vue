@@ -57,7 +57,7 @@ export default {
     let socket = computed(() => store.state.socket);
 
     store.dispatch("updateIsChat", other_id);
-    console.log("enter chat, id=", other_id);
+    console.log("enter chat, id =", other_id);
 
     // 添加消息
     const addMessage = (message) => {

@@ -151,7 +151,7 @@ import { showInfoToUser } from '@/utils/notice';
 import { getDistance } from 'geolib';
 import store from '@/store';
 import router from '@/router';
-import { ref } from 'vue';
+import { watch, ref } from 'vue';
 import $ from 'jquery';
 
 
@@ -170,44 +170,52 @@ export default {
     const location = ref(store.state.location_text);
     const is_loading = ref(false);
 
-
-
     const businesses = ref([]);
 
+
     // 请求商家信息
-    $.ajax({
-      url: 'http://localhost:12345/getAllEleBusiness',
-      type: 'GET',
-      headers: {
-        'Authorization': `Bearer ${store.state.access_token}`
-      },
-      success: (data) => {
-        if (data === "" || data === null) {
-          return;
+    watch(
+      () => store.state.access_token,
+      (token) => {
+        if (token) {
+          $.ajax({
+            url: 'http://localhost:12345/getAllEleBusiness',
+            type: 'GET',
+            headers: {
+              'Authorization': `Bearer ${store.state.access_token}`
+            },
+            success: (data) => {
+              if (data === "" || data === null) {
+                return;
+              }
+              data.forEach(business => {
+
+                const distance = (getDistance(
+                  { longitude: store.state.longitude, latitude: store.state.latitude },
+                  { longitude: business.location.x, latitude: business.location.y }
+                ) / 1000).toFixed(2);
+                const duration = Math.round(parseFloat(distance) / 0.50);
+
+                businesses.value.push({
+                  id: business.id,
+                  store_name: business.storeName,
+                  store_description: business.storeDescription,
+                  store_cover: business.storeCover || 'https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/DefaultStoreCover.png',
+                  store_volume: business.storeVolume,
+                  store_items: business.storeItems,
+                  distance: distance,
+                  duration: duration
+                })
+              });
+            },
+            error: (error) => {
+              console.error('failed to get business info:', error);
+            }
+          });
         }
-        data.forEach(business => {
-
-          const distance = (getDistance(
-            { longitude: store.state.longitude, latitude: store.state.latitude },
-            { longitude: business.location.x, latitude: business.location.y }
-          ) / 1000).toFixed(2);
-          const duration = Math.round(parseFloat(distance) / 0.50);
-
-          businesses.value.push({
-            id: business.id,
-            store_name: business.storeName,
-            store_description: business.storeDescription,
-            store_cover: business.storeCover || 'https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/DefaultStoreCover.png',
-            store_volume: business.store_volume,
-            distance: distance,
-            duration: duration
-          })
-        });
       },
-      error: (error) => {
-        console.error('failed to get business info:', error);
-      }
-    });
+      { immediate: true }
+    );
 
 
 
@@ -225,7 +233,57 @@ export default {
 
     const search_input = ref('');
     const searchFunction = () => {
-      console.log(search_input.value);
+      if (search_input.value.trim() === '') return;
+
+
+
+
+
+      $.ajax({
+        url: 'http://localhost:12345/getEleBusinessByWord?keyword=' + search_input.value.trim(),
+        type: 'GET',
+        headers: {
+          'Authorization': `Bearer ${store.state.access_token}`
+        },
+        success: (data) => {
+          if (data === "" || data === null) {
+            return;
+          }
+
+          showInfoToUser("查询成功", "success");
+          businesses.value = []; // 清空数组
+          data.forEach(business => {
+
+            const distance = (getDistance(
+              { longitude: store.state.longitude, latitude: store.state.latitude },
+              { longitude: business.location.x, latitude: business.location.y }
+            ) / 1000).toFixed(2);
+            const duration = Math.round(parseFloat(distance) / 0.50);
+
+            businesses.value.push({
+              id: business.id,
+              store_name: business.storeName,
+              store_description: business.storeDescription,
+              store_cover: business.storeCover || 'https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/DefaultStoreCover.png',
+              store_volume: business.storeVolume,
+              store_items: business.storeItems,
+              distance: distance,
+              duration: duration
+            });
+          });
+        },
+        error: (error) => {
+          console.error('failed to search business:', error);
+        }
+      });
+
+
+
+
+
+
+
+
       search_input.value = '';
     };
 

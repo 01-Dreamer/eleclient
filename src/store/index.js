@@ -63,6 +63,13 @@ export default createStore({
     },
 
     updateSocket(state, socket) {
+      if (state.socket) {
+        state.socket.onopen = null;
+        state.socket.onmessage = null;
+        state.socket.onclose = null;
+        state.socket.onerror = null;
+      }
+
       state.socket = socket;
     },
 
@@ -191,10 +198,15 @@ export default createStore({
       // 关闭websokcet连接
       if (context.state.socket) {
         try {
+          context.state.socket.onclose = null;
+          context.state.socket.onerror = null;
+
           context.state.socket.close(1000, "user logout");
           console.log("websocket close");
         } catch (error) {
           console.error("failed to close websocket: ", error);
+        } finally {
+          context.commit("updateSocket", null);
         }
       }
 

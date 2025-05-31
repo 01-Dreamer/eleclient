@@ -11,7 +11,7 @@
   <div class="business-info" @click="self_id === other_id ? updateStoreText() : null"
     :style="{ 'cursor': self_id === other_id ? 'pointer' : 'default' }">
     <h1>{{ store_name }}</h1>
-    <p>&#165;15起送 &#165;3配送&nbsp;&nbsp;16km&nbsp;|&nbsp;10分钟</p>
+    <p>&#165;15起送 &#165;3配送&nbsp;&nbsp;{{ distance }}km&nbsp;|&nbsp;{{ duration }}分钟</p>
     <p>{{ store_description }}</p>
     <el-button type="primary" size="small" class="contact-btn" :disabled="self_id === other_id" @click="clickContact">
       联系商家
@@ -104,8 +104,10 @@ export default {
     const other_id = String(route.params.id);
 
     const store_cover = ref('');
-    const store_name = ref("万家饺子（软件园E18店）");
-    const store_description = ref("各种饺子炒菜");
+    const store_name = ref('');
+    const store_description = ref('');
+    const distance = ref(0.00);
+    const duration = ref(0);
 
     const items = ref([]);
     const item_container = ref(null);
@@ -117,6 +119,81 @@ export default {
         }
       });
     };
+
+    // 获取商家信息
+    $.ajax({
+      url: 'http://localhost:12345/getOneEleBusiness?id=' + other_id,
+      type: 'GET',
+      headers: {
+        'Authorization': `Bearer ${store.state.access_token}`
+      },
+      success: (data) => {
+        if (data === "" || data === null) {
+          return;
+        }
+
+        store_cover.value = data.storeCover || 'https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/DefaultStoreCover.png';
+        store_name.value = data.storeName;
+        store_description.value = data.storeDescription;
+        
+
+        data.storeItems.forEach(item => {
+
+          items.value.push(reactive({
+            id: item.itemId,
+            name: item.itemName,
+            description: item.itemDescription,
+            cover: item.itemCover,
+            price: item.itemPrice
+          }));
+          scrollToBottom();
+
+        })
+
+
+
+
+
+        // 计算距离和时间
+        if(self_id == other_id) return;
+        const request_url = 'http://localhost:12345/getDistance?' +
+          'longitude1=' + store.state.longitude +
+          '&latitude1=' + store.state.latitude +
+          '&longitude2=' + data.location.x +
+          '&latitude2=' + data.location.y;
+
+        $.ajax({
+          url: request_url,
+          type: 'GET',
+          headers: {
+            'Authorization': `Bearer ${store.state.access_token}`
+          },
+          success: (data) => {
+            if (data === "" || data === null) {
+              return;
+            }
+
+            distance.value = (data.distance / 1000.00).toFixed(2);
+            duration.value = Math.round(data.duration / 60.00);
+
+          },
+          error: (error) => {
+            console.error('failed to get distance:', error);
+          }
+        });
+
+
+
+
+
+      },
+      error: (error) => {
+        console.error('failed to get business info:', error);
+      }
+    });
+
+
+
 
     const updateStoreCover = () => {
       const input = document.createElement('input');
@@ -517,6 +594,8 @@ export default {
       store_description,
       item_container,
       items,
+      distance,
+      duration,
 
       updateStoreCover,
       updateStoreText,
