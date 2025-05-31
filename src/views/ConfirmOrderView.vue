@@ -17,14 +17,14 @@
   <ul class="order-detailed">
     <li>
       <div class="order-detailed-left">
-        <img src="../img/sp01.png">
+        <img src="">
         <p>纯肉鲜肉（水饺） x 2</p>
       </div>
       <p>&#165;15</p>
     </li>
     <li>
       <div class="order-detailed-left">
-        <img src="../img/sp02.png">
+        <img src="">
         <p>玉米鲜肉（水饺） x 1</p>
       </div>
       <p>&#165;16</p>

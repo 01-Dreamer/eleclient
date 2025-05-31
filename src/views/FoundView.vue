@@ -41,22 +41,8 @@ export default {
       return msg_count.value.get(id) || 0;
     };
 
-    const businesses = [
-      {
-        id: 1,
-        chat_quantity: ref(msg_count.value.get(1) || 0),
-        store_cover: require('../img/sj01.png'),
-        store_name: '万家饺子（软件园E18店）',
-        store_description: '各种饺子炒菜',
-      },
-      {
-        id: 2,
-        chat_quantity: ref(msg_count.value.get(2) || 0),
-        store_cover: require('../img/sj02.png'),
-        store_name: '小锅饭豆腐馆（全运店）',
-        store_description: '特色美食',
-      }
-    ];
+    const businesses = ref([
+    ]);
 
     const clickBusiness = (id) => {
       store.dispatch("clearMsgCount", id);

@@ -1,7 +1,8 @@
 <template>
   <header>
-    <el-icon class="location-icon" @click="getPosition">
-      <Location />
+    <el-icon class="location-icon" @click="is_loading ? null : getPosition()">
+      <Loading v-if="is_loading" />
+      <Location v-else />
     </el-icon>
     <div class="location-text">
       {{ location }}
@@ -18,43 +19,43 @@
 
   <ul class="foodtype">
     <li>
-      <img src="../img/dcfl01.png">
+      <img src="https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/dcfl01.png">
       <p>美食</p>
     </li>
     <li>
-      <img src="../img/dcfl02.png">
+      <img src="https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/dcfl02.png">
       <p>早餐</p>
     </li>
     <li>
-      <img src="../img/dcfl03.png">
+      <img src="https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/dcfl03.png">
       <p>跑腿代购</p>
     </li>
     <li>
-      <img src="../img/dcfl04.png">
+      <img src="https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/dcfl04.png">
       <p>汉堡披萨</p>
     </li>
     <li>
-      <img src="../img/dcfl05.png">
+      <img src="https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/dcfl05.png">
       <p>甜品饮品</p>
     </li>
     <li>
-      <img src="../img/dcfl06.png">
+      <img src="https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/dcfl06.png">
       <p>速食简餐</p>
     </li>
     <li>
-      <img src="../img/dcfl07.png">
+      <img src="https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/dcfl07.png">
       <p>地方小吃</p>
     </li>
     <li>
-      <img src="../img/dcfl08.png">
+      <img src="https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/dcfl08.png">
       <p>米粉面馆</p>
     </li>
     <li>
-      <img src="../img/dcfl09.png">
+      <img src="https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/dcfl09.png">
       <p>包子粥铺</p>
     </li>
     <li>
-      <img src="../img/dcfl10.png">
+      <img src="https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/dcfl10.png">
       <p>炸鸡炸串</p>
     </li>
   </ul>
@@ -67,7 +68,7 @@
 
   <div class="supermember">
     <div class="left">
-      <img src="../img/super_member.png">
+      <img src="https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/super_member.png">
       <h3>超级会员</h3>
       <p>&#8226; 每月享超值权益</p>
     </div>
@@ -105,7 +106,7 @@
             <i class="fa fa-star"></i>
             <i class="fa fa-star"></i>
             <i class="fa fa-star"></i>
-            <span>4.9&nbsp;&nbsp;销量345单</span>
+            <span>4.9&nbsp;&nbsp;销量{{ business.store_volume }}单</span>
           </div>
           <div class="business-info-star-right">
             蜂鸟专送
@@ -143,10 +144,11 @@
 
 
 <script>
-import { Location } from '@element-plus/icons-vue';
+import { Location, Loading } from '@element-plus/icons-vue';
 import { Search } from '@element-plus/icons-vue';
 import { ElInput, ElIcon } from 'element-plus';
 import { showInfoToUser } from '@/utils/notice';
+import { getDistance } from 'geolib';
 import store from '@/store';
 import router from '@/router';
 import { ref } from 'vue';
@@ -158,33 +160,57 @@ export default {
 
   components: {
     Location,
+    Loading,
     ElInput,
     ElIcon,
   },
 
 
   setup() {
-
     const location = ref(store.state.location_text);
+    const is_loading = ref(false);
 
-    const businesses = [
-      {
-        id: 1,
-        store_cover: require('../img/sj01.png'),
-        store_name: '万家饺子（软件园E18店）',
-        store_description: '各种饺子炒菜',
-        distance: 16,
-        duration: 10,
+
+
+    const businesses = ref([]);
+
+    // 请求商家信息
+    $.ajax({
+      url: 'http://localhost:12345/getAllEleBusiness',
+      type: 'GET',
+      headers: {
+        'Authorization': `Bearer ${store.state.access_token}`
       },
-      {
-        id: 2,
-        store_cover: require('../img/sj02.png'),
-        store_name: '小锅饭豆腐馆（全运店）',
-        store_description: '特色美食',
-        distance: 16,
-        duration: 10,
+      success: (data) => {
+        if (data === "" || data === null) {
+          return;
+        }
+        data.forEach(business => {
+
+          const distance = (getDistance(
+            { longitude: store.state.longitude, latitude: store.state.latitude },
+            { longitude: business.location.x, latitude: business.location.y }
+          ) / 1000).toFixed(2);
+          const duration = Math.round(parseFloat(distance) / 0.50);
+
+          businesses.value.push({
+            id: business.id,
+            store_name: business.storeName,
+            store_description: business.storeDescription,
+            store_cover: business.storeCover || 'https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/DefaultStoreCover.png',
+            store_volume: business.store_volume,
+            distance: distance,
+            duration: duration
+          })
+        });
+      },
+      error: (error) => {
+        console.error('failed to get business info:', error);
       }
-    ];
+    });
+
+
+
 
     const clickBusiness = (id) => {
       store.dispatch("clearMsgCount", id);
@@ -200,15 +226,16 @@ export default {
     const search_input = ref('');
     const searchFunction = () => {
       console.log(search_input.value);
+      search_input.value = '';
     };
 
     const handleSort = (type) => {
       if (type === "default") {
-        console.log("default");
+        businesses.value.sort((a, b) => a.id - b.id);
       } else if (type === "distance") {
-        console.log("distance");
+        businesses.value.sort((a, b) => a.distance - b.distance);
       } else if (type === "sales") {
-        console.log("sales");
+        businesses.value.sort((a, b) => b.store_volume - a.store_volume);
       } else {
         console.error("sort error");
       }
@@ -216,6 +243,7 @@ export default {
 
 
     const getPosition = () => {
+      is_loading.value = true;
       navigator.geolocation.getCurrentPosition(
         (position) => {
           console.log("longitude:", position.coords.longitude);
@@ -235,11 +263,13 @@ export default {
               if (response === '') {
                 showInfoToUser("解析位置失败", "error");
                 console.error('error: response is null');
+                is_loading.value = false;
                 return;
               }
               showInfoToUser("获取位置成功", "success");
               console.log('address:', response);
               location.value = response;
+              is_loading.value = false;
               store.dispatch("updateLocation", {
                 longitude: position.coords.longitude,
                 latitude: position.coords.latitude,
@@ -249,6 +279,7 @@ export default {
             error: (error) => {
               showInfoToUser("解析位置失败", "error");
               console.error('error:', error);
+              is_loading.value = false;
             },
           });
 
@@ -256,6 +287,7 @@ export default {
         (error) => {
           showInfoToUser("获取位置失败", "error");
           console.error("failed to get position:", error)
+          is_loading.value = false;
         },
       );
     };
@@ -264,6 +296,7 @@ export default {
     return {
       businesses,
       location,
+      is_loading,
       Search,
       search_input,
 
@@ -367,7 +400,7 @@ header {
   margin: 0 auto;
   height: 29vw;
 
-  background-image: url("../img/index_banner.png");
+  background-image: url("https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/index_banner.png");
   background-repeat: no-repeat;
   background-size: cover;
 
@@ -478,6 +511,7 @@ header {
   margin-bottom: 14vw;
 
   padding-left: 0;
+  cursor: pointer;
 }
 
 .business li {

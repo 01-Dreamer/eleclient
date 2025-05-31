@@ -113,7 +113,10 @@ export default {
                   email: email.value,
                   avatar: xhr.responseJSON.avatar,
                   refresh_token: refresh_token,
-                  is_login: true,
+                  longitude: xhr.responseJSON.longitude,
+                  latitude: xhr.responseJSON.latitude,
+                  location_text: xhr.responseJSON.address,
+                  is_login: true
                 });
 
                 // 在前端存储长期jwt令牌

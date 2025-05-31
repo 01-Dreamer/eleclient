@@ -23,7 +23,7 @@ export default {
     // 使用前端存储的长期Jwt令牌请求登录
     const refresh_token = localStorage.getItem('refresh_token');
     console.log("refresh_token in localStorage: ", refresh_token);
-    if (refresh_token !== null) {
+    if (refresh_token !== null && !store.state.is_login) {
       $.ajax({
         url: 'http://localhost:12345/loginByRefreshToken',
         type: 'POST',
@@ -38,7 +38,10 @@ export default {
                 email: xhr.responseJSON.email,
                 avatar: xhr.responseJSON.avatar,
                 refresh_token: refresh_token,
-                is_login: true,
+                longitude: xhr.responseJSON.longitude,
+                latitude: xhr.responseJSON.latitude,
+                location_text: xhr.responseJSON.address,
+                is_login: true
               });
 
               router.push({ name: "home" });

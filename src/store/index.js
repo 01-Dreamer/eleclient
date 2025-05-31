@@ -36,6 +36,12 @@ export default createStore({
       state.refresh_token = user.refresh_token;
       state.access_token = user.access_token;
       state.is_login = user.is_login;
+
+      if ('location_text' in user && user.location_text !== null && user.location_text !== '') {
+        state.longitude = user.longitude;
+        state.latitude = user.latitude;
+        state.location_text = user.location_text;
+      }
     },
 
     updateAvatar(state, avatar) {

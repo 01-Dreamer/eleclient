@@ -103,7 +103,7 @@ export default {
     const self_id = String(store.state.id);
     const other_id = String(route.params.id);
 
-    const store_cover = ref(require('../img/sj01.png'));
+    const store_cover = ref('');
     const store_name = ref("万家饺子（软件园E18店）");
     const store_description = ref("各种饺子炒菜");
 

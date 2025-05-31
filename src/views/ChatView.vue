@@ -173,8 +173,7 @@ export default {
           'Authorization': `Bearer ${store.state.access_token}`
         },
         success: (data) => {
-          if (data === "") {
-            console.error("failed to get history message");
+          if (data === "" || data === null) {
             return;
           }
           data.forEach(msg => {
