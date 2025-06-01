@@ -27,7 +27,8 @@
               <span class="item-name">配送费</span>
               <span class="item-price">¥3</span>
             </div>
-            <el-button type="warning" size="small" class="pay-btn">去支付</el-button>
+            <el-button type="warning" size="small" class="pay-btn"
+              @click="goToPay(order.order_json, order.id)">去支付</el-button>
           </div>
         </el-collapse-item>
       </el-collapse>
@@ -68,6 +69,9 @@
 <script>
 import HeaderBase from "@/components/HeaderBase.vue";
 import { ref } from 'vue';
+import store from '@/store';
+import router from '@/router';
+import $ from 'jquery';
 
 
 export default {
@@ -77,43 +81,79 @@ export default {
   },
 
   setup() {
-    const unpair_orders = ref([
-      {
-        id: 1,
-        store_name: "万家饺子（软件园E18店）",
-        total_price: 49,
-        items: [
-          { name: "纯肉鲜肉（水饺） x 2", price: 15 },
-          { name: "玉米鲜肉（水饺） x 1", price: 16 }
-        ]
-      }
-    ]);
+    const unpair_orders = ref([]);
+    const pair_orders = ref([]);
 
-    const pair_orders = ref([
-      {
-        id: 2,
-        store_name: "万家饺子（软件园E18店）",
-        total_price: 49,
-        items: [
-          { name: "纯肉鲜肉（水饺） x 2", price: 15 },
-          { name: "玉米鲜肉（水饺） x 1", price: 16 }
-        ]
+    $.ajax({
+      url: 'http://localhost:12345/getMyPayOrder',
+      type: 'GET',
+      headers: {
+        'Authorization': `Bearer ${store.state.access_token}`
       },
-      {
-        id: 3,
-        store_name: "肯德基（中山路店）",
-        total_price: 68,
-        items: [
-          { name: "香辣鸡腿堡 x 1", price: 18 },
-          { name: "薯条（大） x 1", price: 12 },
-          { name: "可乐（大） x 1", price: 10 }
-        ]
+      success: (data) => {
+        if (data !== null && data !== '') {
+          data.forEach(i => {
+
+            const order = JSON.parse(i.orderInfo);
+            const store_name = order["storeName"];
+            const total_price = order["totalPrice"];
+            const item = JSON.parse(order["items"]);
+            const items = [];
+            Object.keys(item).forEach(key => {
+              const index = key.lastIndexOf("@");
+              const id = key.slice(index + 1);
+              const name = key.slice(0, index);
+              items.push({
+                id: id,
+                name: name,
+                price: item[key],
+              })
+            });
+            items.sort((a, b) => a.id.localeCompare(b.id));
+
+            if (i.pay) {
+              pair_orders.value.push({
+                id: i.orderId,
+                store_name: store_name,
+                total_price: total_price,
+                order_json: i.orderInfo,
+                items: items
+              });
+            } else {
+              unpair_orders.value.push({
+                id: i.orderId,
+                store_name: store_name,
+                total_price: total_price,
+                order_json: i.orderInfo,
+                items: items
+              });
+            }
+
+          });
+        }
+      },
+      error: (error) => {
+        console.error("failed to my order: ", error);
       }
-    ]);
+    });
+
+
+    const goToPay = (order_json, order_id) => {
+      router.push({
+        name: "pay",
+        query: {
+          order_json: order_json,
+          order_id: order_id
+        },
+      })
+    };
+
 
     return {
       unpair_orders,
-      pair_orders
+      pair_orders,
+
+      goToPay
     }
 
 

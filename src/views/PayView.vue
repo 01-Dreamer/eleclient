@@ -41,7 +41,7 @@
   </ul>
 
   <div class="payment-button">
-    <el-button type="success">
+    <el-button type="success" @click="goToPay">
       <span>确认支付</span>
     </el-button>
   </div>
@@ -51,8 +51,12 @@
 
 <script>
 import HeaderBase from "@/components/HeaderBase.vue";
+import { showInfoToUser } from '@/utils/notice';
 import { useRoute } from 'vue-router';
+import router from '@/router';
+import store from '@/store';
 import { ref } from 'vue';
+import $ from 'jquery';
 
 export default {
   name: "PayView",
@@ -63,6 +67,10 @@ export default {
   setup() {
     const route = useRoute();
     const order = JSON.parse(route.query.order_json);
+
+    const order_id = order["orderId"] || route.query.order_id;
+    console.log("order id:", order_id);
+
     const item = JSON.parse(order["items"]);
     const store_name = order["storeName"];
     const total_price = order["totalPrice"];
@@ -82,12 +90,40 @@ export default {
     });
     items.value.sort((a, b) => a.id.localeCompare(b.id));
 
+
+    const goToPay = () => {
+      $.ajax({
+        url: 'http://localhost:12345/submitPayOrder?orderId=' + order_id,
+        type: 'POST',
+        headers: {
+          'Authorization': `Bearer ${store.state.access_token}`
+        },
+        success: (data) => {
+          if (data !== null && data !== '' && data) {
+            showInfoToUser("支付成功", "success");
+            router.push({
+              name: "order",
+            })
+          } else {
+            showInfoToUser("支付失败", "error");
+          }
+        },
+        error: (error) => {
+          showInfoToUser("支付失败", "error");
+          console.error("failed to pay order: ", error);
+        }
+      });
+    };
+
+
     return {
       store_name,
       total_price,
       items,
       is_show_detail,
       is_wechat_pay,
+
+      goToPay,
     }
   }
 }
