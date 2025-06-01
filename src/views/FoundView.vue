@@ -27,6 +27,7 @@ import HeaderBase from '@/components/HeaderBase.vue';
 import router from '@/router';
 import { ref, computed } from 'vue';
 import store from '@/store';
+import $ from 'jquery';
 
 export default {
   name: "FoundView",
@@ -41,8 +42,32 @@ export default {
       return msg_count.value.get(id) || 0;
     };
 
-    const businesses = ref([
-    ]);
+    const businesses = ref([]);
+    $.ajax({
+      url: 'http://localhost:12345/getAllEleBusiness',
+      type: 'GET',
+      headers: {
+        'Authorization': `Bearer ${store.state.access_token}`
+      },
+      success: (data) => {
+        if (data === "" || data === null) {
+          return;
+        }
+        data.forEach(business => {
+          businesses.value.push({
+            id: business.id,
+            store_name: business.storeName,
+            store_description: business.storeDescription,
+            store_cover: business.storeCover || 'https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/DefaultStoreCover.png',
+          })
+        });
+      },
+      error: (error) => {
+        console.error('failed to get business info:', error);
+      }
+    });
+
+
 
     const clickBusiness = (id) => {
       store.dispatch("clearMsgCount", id);

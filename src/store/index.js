@@ -3,7 +3,7 @@ import $ from 'jquery';
 
 export default createStore({
   state: {
-    id: -1,
+    id: 1,
     email: "",
     avatar: "https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/DefaultAvatar.png",
 
@@ -13,9 +13,9 @@ export default createStore({
 
     longitude: -999,
     latitude: -999,
-    location_text: "",
+    location_text: "云南大学软件学院",
 
-    is_login: false,
+    is_login: true,
 
     socket: null,
     is_chat: -1,

@@ -30,7 +30,7 @@
         <Shop />
       </el-icon>
       <div class="sales-text">
-        <span>店铺销量：<strong>1200</strong> 单</span>
+        <span>店铺销量：<strong>{{ volume }}</strong> 单</span>
       </div>
     </div>
 
@@ -65,7 +65,7 @@
 </template>
 
 <script>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import HeaderBase from "@/components/HeaderBase.vue";
 import $ from "jquery";
 import { showInfoToUser } from '@/utils/notice';
@@ -95,6 +95,23 @@ export default {
   setup() {
     const avatar = computed(() => store.state.avatar);
     const location = computed(() => store.state.location_text);
+    const volume = ref(0);
+    $.ajax({
+      url: 'http://localhost:12345/getMyStoreVolume',
+      type: 'GET',
+      headers: {
+        'Authorization': `Bearer ${store.state.access_token}`
+      },
+      success: (data) => {
+        if (data === "" || data === null) {
+          return;
+        }
+        volume.value = data;
+      },
+      error: (error) => {
+        console.error('failed to get my store volume:', error);
+      }
+    });
 
     const changeAvatar = () => {
       const input = document.createElement('input');
@@ -210,6 +227,7 @@ export default {
     return {
       avatar,
       location,
+      volume,
 
       changeAvatar,
       changeLocation,
@@ -223,6 +241,9 @@ export default {
 
 <style scoped>
 .mine-info {
+  display: flex;
+  flex-direction: column;
+
   font-family: Arial, sans-serif;
   padding: 4vw;
   margin-top: 14vw;
@@ -284,6 +305,8 @@ export default {
 }
 
 .footer {
-  margin-top: 64vw;
+  width: 100%;
+  margin: auto;
+  margin-bottom: 0;
 }
 </style>

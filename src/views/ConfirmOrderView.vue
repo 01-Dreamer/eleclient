@@ -4,42 +4,38 @@
   </HeaderBase>
 
 
-  <div class="order-info">
+  <div class="user-info">
     <h5>订单配送至：</h5>
-    <div class="order-info-address">
-      <p>沈阳市浑南区智慧四街1-121号</p>
+    <div class="user-info-address">
+      <span>{{ location }}</span>
       <i class="fa fa-angle-right"></i>
     </div>
-    <p>张先生 13656785432</p>
+    <span>云先生 12345678900</span>
   </div>
 
-  <h3>万家饺子（软件园E18店）</h3>
-  <ul class="order-detailed">
-    <li>
-      <div class="order-detailed-left">
-        <img src="">
-        <p>纯肉鲜肉（水饺） x 2</p>
-      </div>
-      <p>&#165;15</p>
-    </li>
-    <li>
-      <div class="order-detailed-left">
-        <img src="">
-        <p>玉米鲜肉（水饺） x 1</p>
-      </div>
-      <p>&#165;16</p>
-    </li>
-  </ul>
-  <div class="order-deliveryfee">
-    <p>配送费</p>
-    <p>&#165;3</p>
+  <div class="order-info">
+    <h3>万家饺子（软件园E18店）</h3>
+    <ul class="order-detailed">
+      <li>
+        <div class="order-detailed-left">
+          <img src="https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/DefaultAvatar.png">
+          <p>纯肉鲜肉（水饺） x 2</p>
+        </div>
+        <p>&#165;15</p>
+      </li>
+    </ul>
+    <div class="order-deliveryfee">
+      <p>配送费</p>
+      <p>&#165;3</p>
+    </div>
   </div>
+
 
   <div class="total">
     <div class="total-left">
       &#165;49
     </div>
-    <div class="total-right" onclick="location.href='payment.html'">
+    <div class="total-right">
       去支付
     </div>
   </div>
@@ -51,34 +47,50 @@
 
 <script>
 import HeaderBase from "@/components/HeaderBase.vue";
+import { computed } from 'vue';
+import store from '@/store';
 
 export default {
   name: "ConfirmPayView",
   components: {
     HeaderBase,
   },
+
+  setup() {
+    const location = computed(() => store.state.location_text);
+
+    return {
+      location,
+    }
+  }
 }
 </script>
 
 
+
+
+
 <style scoped>
-.order-info {
+.user-info {
   width: 100%;
-  margin-top: 12vw;
   background-color: #0097EF;
   box-sizing: border-box;
   padding: 2vw;
-  color: #fff;
+  color: #FFF;
+
+  position: fixed;
+  left: 0;
+  top: 12vw;
 }
 
-.order-info h5 {
+.user-info h5 {
   font-size: 3vw;
   font-weight: 300;
 
-  background-color: red;
+  margin: 0;
 }
 
-.order-info .order-info-address {
+.user-info .user-info-address {
   width: 100%;
   display: flex;
   justify-content: space-between;
@@ -86,39 +98,45 @@ export default {
 
   font-weight: 700;
   user-select: none;
-  cursor: pointer;
-  margin: 1vw 0;
-
-  background-color: black;
+  margin: 0;
 }
 
-.order-info .order-info-address p {
+.user-info .user-info-address span {
   width: 90%;
   font-size: 5vw;
 }
 
-.order-info .order-info-address i {
+.user-info .user-info-address i {
   font-size: 6vw;
 }
 
-.order-info p {
+.user-info span {
   font-size: 3vw;
+
+  margin: 0;
 }
 
-h3 {
+.order-info {
+  margin-top: 35vw;
+}
+
+.order-info h3 {
   box-sizing: border-box;
   padding: 3vw;
   font-size: 4vw;
   color: #666;
   border-bottom: solid 1px #DDD;
+
+  margin: 0;
 }
 
-.order-detailed {
+.order-info .order-detailed {
   width: 100%;
   padding: 0;
+  margin: 0;
 }
 
-.order-detailed li {
+.order-info .order-detailed li {
   width: 100%;
   height: 16vw;
   box-sizing: border-box;
@@ -130,30 +148,31 @@ h3 {
   align-items: center;
 }
 
-.order-detailed li .order-detailed-left {
+.order-info .order-detailed li .order-detailed-left {
   display: flex;
   align-items: center;
 }
 
-.order-detailed li .order-detailed-left img {
+.order-info .order-detailed li .order-detailed-left img {
   width: 10vw;
   height: 10vw;
 }
 
-.order-detailed li .order-detailed-left p {
+.order-info .order-detailed li .order-detailed-left p {
   font-size: 3.5vw;
   margin-left: 3vw;
 }
 
-.order-detailed li p {
+.order-info .order-detailed li p {
   font-size: 3.5vw;
 }
 
-.order-deliveryfee {
+.order-info .order-deliveryfee {
   width: 100%;
   height: 16vw;
   box-sizing: border-box;
   padding: 3vw;
+  margin: 0;
   color: #666;
   display: flex;
   justify-content: space-between;

@@ -1,10 +1,8 @@
 <template>
-
   <div class="wrapper">
     <router-view />
     <NavBar class="footer" />
   </div>
-
 </template>
 
 
