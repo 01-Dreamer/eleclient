@@ -3,7 +3,7 @@ import $ from 'jquery';
 
 export default createStore({
   state: {
-    id: 1,
+    id: -1,
     email: "",
     avatar: "https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/DefaultAvatar.png",
 
@@ -15,7 +15,7 @@ export default createStore({
     latitude: -999,
     location_text: "云南大学软件学院",
 
-    is_login: true,
+    is_login: false,
 
     socket: null,
     is_chat: -1,
@@ -63,13 +63,6 @@ export default createStore({
     },
 
     updateSocket(state, socket) {
-      if (state.socket) {
-        state.socket.onopen = null;
-        state.socket.onmessage = null;
-        state.socket.onclose = null;
-        state.socket.onerror = null;
-      }
-
       state.socket = socket;
     },
 
@@ -198,9 +191,6 @@ export default createStore({
       // 关闭websokcet连接
       if (context.state.socket) {
         try {
-          context.state.socket.onclose = null;
-          context.state.socket.onerror = null;
-
           context.state.socket.close(1000, "user logout");
           console.log("websocket close");
         } catch (error) {
@@ -255,16 +245,16 @@ export default createStore({
 
         _socket.onclose = function () {
           console.log("websocket close");
-          setTimeout(() => {
+          if (context.state.socket) {
             context.commit("updateSocket", null);
-          }, 0);
+          }
         };
 
         _socket.onerror = function (error) {
           console.error("websocket error:", error);
-          setTimeout(() => {
+          if (context.state.socket) {
             context.commit("updateSocket", null);
-          }, 0);
+          }
         };
 
       });

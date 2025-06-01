@@ -14,14 +14,14 @@
   </div>
 
   <div class="order-info">
-    <h3>万家饺子（软件园E18店）</h3>
+    <h3>{{ store_name }}</h3>
     <ul class="order-detailed">
-      <li>
+      <li v-for="(item, index) in items" :key="index">
         <div class="order-detailed-left">
-          <img src="https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/DefaultAvatar.png">
-          <p>纯肉鲜肉（水饺） x 2</p>
+          <img :src="item.cover">
+          <p>{{ item.name }}</p>
         </div>
-        <p>&#165;15</p>
+        <p>&#165;{{ item.price }}</p>
       </li>
     </ul>
     <div class="order-deliveryfee">
@@ -33,22 +33,22 @@
 
   <div class="total">
     <div class="total-left">
-      &#165;49
+      &#165;{{ total_price }}
     </div>
-    <div class="total-right">
+    <div class="total-right" @click="goToPay">
       去支付
     </div>
   </div>
-
-
-
 </template>
 
 
 <script>
 import HeaderBase from "@/components/HeaderBase.vue";
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+import { useRoute } from 'vue-router';
+import router from '@/router';
 import store from '@/store';
+
 
 export default {
   name: "ConfirmPayView",
@@ -59,8 +59,47 @@ export default {
   setup() {
     const location = computed(() => store.state.location_text);
 
+    const route = useRoute();
+    const order_json = route.query.order_json;
+    const order = JSON.parse(order_json);
+    const item = JSON.parse(order["items"]);
+    const cover = JSON.parse(route.query.cover_json);
+
+    const store_name = order["storeName"];
+    const total_price = order["totalPrice"];
+
+
+    const items = ref([]);
+    Object.keys(item).forEach(key => {
+      const index = key.lastIndexOf("@");
+      const id = key.slice(index + 1);
+      const name = key.slice(0, index);
+      items.value.push({
+        id: id,
+        name: name,
+        price: item[key],
+        cover: cover[id]
+      })
+    });
+    items.value.sort((a, b) => a.id.localeCompare(b.id));
+
+
+    const goToPay = () => {
+      router.push({
+        name: "pay",
+        query: {
+          order_json: order_json,
+        },
+      })
+    };
+
     return {
       location,
+      store_name,
+      total_price,
+      items,
+
+      goToPay
     }
   }
 }

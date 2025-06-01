@@ -40,11 +40,11 @@
 
       <div class="food-right" v-show="self_id !== other_id">
         <div>
-          <i class="fa fa-minus-circle"></i>
+          <i class="fa fa-minus-circle" v-show="getItemCount(item.id) > 0" @click="dropItem(item.id, item.price)"></i>
         </div>
-        <p><span>3</span></p>
+        <p><span>{{ getItemCount(item.id) }}</span></p>
         <div>
-          <i class="fa fa-plus-circle"></i>
+          <i class="fa fa-plus-circle" @click="selectItem(item.id, item.price, item.cover)"></i>
         </div>
       </div>
     </li>
@@ -61,15 +61,15 @@
     <div class="cart-left">
       <div class="cart-left-icon">
         <i class="fa fa-shopping-cart"></i>
-        <div class="cart-left-icon-quantity">3</div>
+        <div class="cart-left-icon-quantity" v-show="select_item_sum > 0">{{ select_item_sum }}</div>
       </div>
       <div class="cart-left-info">
-        <p>&#165;12.88</p>
+        <p>&#165;{{ total_price }}</p>
         <p>另需配送费3元</p>
       </div>
     </div>
-    <div class="cart-right">
-      <div class="cart-right-item">
+    <div class="cart-right" :style="{ 'background-color': total_price >= 15 ? '#38CA73' : '#87CEFA' }">
+      <div class="cart-right-item" @click="goToPay">
         去结算
       </div>
     </div>
@@ -82,7 +82,7 @@ import HeaderBase from "@/components/HeaderBase.vue";
 import { useRoute } from 'vue-router';
 import store from '@/store';
 import router from '@/router';
-import { reactive, ref, nextTick } from 'vue';
+import { reactive, ref, nextTick, computed } from 'vue';
 import { ElMessageBox } from 'element-plus';
 import { showInfoToUser } from '@/utils/notice';
 import { Delete, Plus } from '@element-plus/icons-vue';
@@ -111,6 +111,15 @@ export default {
 
     const items = ref([]);
     const item_container = ref(null);
+
+    const select_item = computed(() => new Map()); // item_id -> 数量
+    const select_item_cover = new Map(); // 将图片传给'确认订单'界面, item_id --> item_cover
+    const select_item_sum = ref(0);
+    const total_price = ref(3.00);
+
+    ///////////////////////////////////////////////////
+    /// 和页面有关的工具函数
+    ///////////////////////////////////////////////////
     const scrollToBottom = () => {
       nextTick(() => {
         const container = item_container.value;
@@ -120,7 +129,111 @@ export default {
       });
     };
 
-    // 获取商家信息
+    const getItemCount = (item_id) => {
+      return select_item.value.get(item_id) || 0;
+    };
+
+    const selectItem = (item_id, item_price, item_cover) => {
+      select_item_sum.value++;
+      total_price.value = Math.round((total_price.value + item_price) * 100) / 100;
+
+      select_item_cover.set(item_id, item_cover)
+
+      const new_count = (select_item.value.get(item_id) || 0) + 1;
+      select_item.value.set(item_id, new_count);
+    };
+
+    const dropItem = (item_id, item_price) => {
+      select_item_sum.value--;
+      total_price.value = Math.round((total_price.value - item_price) * 100) / 100;
+
+      const new_count = (select_item.value.get(item_id) || 1) - 1;
+      if (new_count === 0) {
+        select_item.value.delete(item_id);
+      } else {
+        select_item.value.set(item_id, new_count);
+      }
+    };
+
+    const getItem = (item_id) => {
+      return items.value.find(i => String(i.id) === String(item_id));
+    };
+
+    const modifyItemCover = (item_id, cover) => {
+      const item = getItem(item_id);
+      if (item) {
+        item.cover = cover;
+      }
+    };
+
+    const modifyItemText = (item_id, name, description, price) => {
+      const item = getItem(item_id);
+      if (item) {
+        item.name = name;
+        item.description = description;
+        item.price = price;
+      }
+    };
+
+    const clickContact = () => {
+      router.push({
+        name: "chat",
+        params: {
+          other_id
+        },
+        query: {
+          store_name: store_name.value
+        },
+      })
+    };
+
+    ///////////////////////////////////////////////////
+    /// 向后端提交订单
+    ///////////////////////////////////////////////////
+    const goToPay = () => {
+      if (total_price.value < 15) {
+        showInfoToUser("15元起送", "warning");
+        return;
+      }
+
+      const obj1 = Object.fromEntries(select_item.value);
+      const order_json = JSON.stringify(obj1);
+
+      const obj2 = Object.fromEntries(select_item_cover);
+      const cover_json = JSON.stringify(obj2);
+
+      $.ajax({
+        url: 'http://localhost:12345/createOrder?id=' + other_id,
+        type: 'POST',
+        headers: {
+          'Authorization': `Bearer ${store.state.access_token}`
+        },
+        contentType: 'application/json',
+        data: order_json,
+        success: (data) => {
+          if (data !== null && data !== '') {
+            showInfoToUser("订单创建成功", "success");
+            router.push({
+              name: "confirm_order",
+              query: {
+                order_json: data,
+                cover_json: cover_json
+              },
+            })
+          } else {
+            showInfoToUser("订单创建失败", "error");
+          }
+        },
+        error: (error) => {
+          showInfoToUser("订单创建失败", "error");
+          console.error("failed to create order: ", error);
+        }
+      });
+    };
+
+    ///////////////////////////////////////////////////
+    /// 获取商家信息
+    ///////////////////////////////////////////////////
     $.ajax({
       url: 'http://localhost:12345/getOneEleBusiness?id=' + other_id,
       type: 'GET',
@@ -135,10 +248,8 @@ export default {
         store_cover.value = data.storeCover || 'https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/DefaultStoreCover.png';
         store_name.value = data.storeName;
         store_description.value = data.storeDescription;
-        
 
         data.storeItems.forEach(item => {
-
           items.value.push(reactive({
             id: item.itemId,
             name: item.itemName,
@@ -147,21 +258,15 @@ export default {
             price: item.itemPrice
           }));
           scrollToBottom();
-
         })
 
-
-
-
-
         // 计算距离和时间
-        if(self_id == other_id) return;
+        if (self_id == other_id) return;
         const request_url = 'http://localhost:12345/getDistance?' +
           'longitude1=' + store.state.longitude +
           '&latitude1=' + store.state.latitude +
           '&longitude2=' + data.location.x +
           '&latitude2=' + data.location.y;
-
         $.ajax({
           url: request_url,
           type: 'GET',
@@ -172,29 +277,22 @@ export default {
             if (data === "" || data === null) {
               return;
             }
-
             distance.value = (data.distance / 1000.00).toFixed(2);
             duration.value = Math.round(data.duration / 60.00);
-
           },
           error: (error) => {
             console.error('failed to get distance:', error);
           }
         });
-
-
-
-
-
       },
       error: (error) => {
         console.error('failed to get business info:', error);
       }
     });
 
-
-
-
+    ///////////////////////////////////////////////////
+    /// 更新店铺封面
+    ///////////////////////////////////////////////////
     const updateStoreCover = () => {
       const input = document.createElement('input');
       input.type = 'file';
@@ -213,8 +311,6 @@ export default {
 
         const formData = new FormData();
         formData.append('file', file);
-
-
         $.ajax({
           url: 'http://localhost:12345/updateStoreCover',
           type: 'POST',
@@ -245,6 +341,9 @@ export default {
       document.body.removeChild(input);
     }
 
+    ///////////////////////////////////////////////////
+    /// 更新店铺描述
+    ///////////////////////////////////////////////////
     const updateStoreText = () => {
       ElMessageBox({
         title: '编辑商家信息',
@@ -273,13 +372,11 @@ export default {
           if (action === 'confirm') {
             const name = document.getElementById('editStoreName').value.trim();
             const description = document.getElementById('editStoreDesc').value.trim();
-
             if (!name) {
               showInfoToUser("商家名称不能为空", "error");
               instance.confirmButtonLoading = false;
               return false;
             }
-
             if (!description) {
               showInfoToUser("商家描述不能为空", "error");
               instance.confirmButtonLoading = false;
@@ -306,8 +403,6 @@ export default {
                 console.error("failed to update store text: ", error);
               }
             });
-
-
             done();
           } else {
             done();
@@ -318,34 +413,9 @@ export default {
       });
     };
 
-
-
-
-
-    const getItem = (item_id) => {
-      return items.value.find(i => String(i.id) === String(item_id));
-    };
-
-    const modifyItemCover = (item_id, cover) => {
-      const item = getItem(item_id);
-      if (item) {
-        item.cover = cover;
-      }
-    };
-
-    const modifyItemText = (item_id, name, description, price) => {
-      const item = getItem(item_id);
-      if (item) {
-        item.name = name;
-        item.description = description;
-        item.price = price;
-      }
-    }
-
-
-
-
-
+    ///////////////////////////////////////////////////
+    /// 更新商品封面
+    ///////////////////////////////////////////////////
     const updateItemCover = (item_id) => {
       const input = document.createElement('input');
       input.type = 'file';
@@ -387,7 +457,6 @@ export default {
             console.error("failed to update img: ", error);
           }
         });
-
       };
 
       document.body.appendChild(input);
@@ -395,7 +464,9 @@ export default {
       document.body.removeChild(input);
     };
 
-
+    ///////////////////////////////////////////////////
+    /// 更新商品描述
+    ///////////////////////////////////////////////////
     const updateItemText = (item_id) => {
       const item = getItem(item_id);
       if (!item) return;
@@ -430,19 +501,16 @@ export default {
             const description = document.getElementById('editDesc').value;
             const priceStr = document.getElementById('editPrice').value;
             const price = parseFloat(priceStr);
-
             if (!name) {
               showInfoToUser("商品名称不能为空", "error");
               instance.confirmButtonLoading = false;
               return false;
             }
-
             if (!description) {
               showInfoToUser("商品描述不能为空", "error");
               instance.confirmButtonLoading = false;
               return false;
             }
-
             if (isNaN(price) || price < 0 || !/^\d+(\.\d{1,2})?$/.test(priceStr)) {
               showInfoToUser("非法价格", "error");
               instance.confirmButtonLoading = false;
@@ -454,7 +522,6 @@ export default {
               '&itemName=' + name +
               '&itemDescription=' + description +
               '&itemPrice=' + price;
-
             $.ajax({
               url: request_url,
               type: 'POST',
@@ -474,14 +541,6 @@ export default {
                 console.error("failed to update item text: ", error);
               }
             });
-
-
-
-
-
-
-
-
             done();
           } else {
             done();
@@ -492,7 +551,9 @@ export default {
       });
     };
 
-
+    ///////////////////////////////////////////////////
+    /// 增加商品
+    ///////////////////////////////////////////////////
     const addItem = () => {
       $.ajax({
         url: 'http://localhost:12345/addStoreItem',
@@ -502,7 +563,6 @@ export default {
         },
         success: (data) => {
           if (Number(data) !== -1) {
-
             items.value.push(reactive({
               id: Number(data),
               name: "请编辑商品名称",
@@ -525,10 +585,9 @@ export default {
       });
     };
 
-
-
-
-
+    ///////////////////////////////////////////////////
+    /// 删除商品
+    ///////////////////////////////////////////////////
     const delItem = (item_id) => {
       ElMessageBox.confirm(
         '确定要删除该商品吗?',
@@ -540,8 +599,6 @@ export default {
         }
       )
         .then(() => {
-
-
           $.ajax({
             url: 'http://localhost:12345/delStoreItem?itemId=' + item_id,
             type: 'DELETE',
@@ -564,27 +621,11 @@ export default {
               console.error("failed to delete item: ", error);
             }
           });
-
-
         })
         .catch(() => {
           console.log('item delete cancelled')
         })
     };
-
-
-    const clickContact = () => {
-      router.push({
-        name: "chat",
-        params: {
-          other_id
-        },
-        query: {
-          store_name: store_name.value
-        },
-      })
-    };
-
 
     return {
       self_id,
@@ -592,18 +633,24 @@ export default {
       store_cover,
       store_name,
       store_description,
+      select_item_sum,
       item_container,
       items,
+      total_price,
       distance,
       duration,
 
+      clickContact,
       updateStoreCover,
       updateStoreText,
       updateItemCover,
       updateItemText,
+      getItemCount,
+      selectItem,
+      dropItem,
+      goToPay,
       addItem,
-      delItem,
-      clickContact
+      delItem
     }
   }
 }
@@ -807,7 +854,6 @@ export default {
 .cart .cart-right .cart-right-item {
   width: 100%;
   height: 100%;
-  background-color: #38CA73;
   color: #FFF;
   font-size: 4.5vw;
   font-weight: 700;

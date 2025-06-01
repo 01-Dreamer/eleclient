@@ -6,16 +6,16 @@
   <h3>订单信息：</h3>
   <div class="order-info">
     <span>
-      万家饺子（软件园E18店）
-      <i class="fa fa-caret-down" id="showBtn"></i>
+      {{ store_name }}
+      <i class="fa fa-caret-down" style="cursor: pointer;" @click="is_show_detail = !is_show_detail"></i>
     </span>
-    <span>&#165;49</span>
+    <span>&#165;{{ total_price }}</span>
   </div>
 
-  <ul class="order-detailet" id="detailetBox">
-    <li>
-      <span>纯肉鲜肉（水饺） x 2</span>
-      <span>&#165;15</span>
+  <ul class="order-detailet" v-show="is_show_detail">
+    <li v-for="(item, index) in items" :key="index">
+      <span>{{ item.name }}</span>
+      <span>&#165;{{ item.price }}</span>
     </li>
     <li>
       <span>配送费</span>
@@ -24,30 +24,72 @@
   </ul>
 
   <ul class="payment-type">
-    <li>
-      <img src="https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/alipay.png">
-      <i class="fa fa-check-circle"></i>
+    <li @click="is_wechat_pay = false">
+      <div class="payment-info">
+        <img src="https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/alipay.png" />
+        <span class="payment-text">支付宝</span>
+      </div>
+      <i class="fa fa-check-circle" v-show="!is_wechat_pay"></i>
     </li>
-    <li>
-      <img src="https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/wechatpay.png">
+    <li @click="is_wechat_pay = true">
+      <div class="payment-info">
+        <img src="https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/wechatpay.png" />
+        <span class="payment-text">微信支付</span>
+      </div>
+      <i class="fa fa-check-circle" v-show="is_wechat_pay"></i>
     </li>
   </ul>
+
   <div class="payment-button">
     <el-button type="success">
       <span>确认支付</span>
     </el-button>
   </div>
+
 </template>
 
 
 <script>
 import HeaderBase from "@/components/HeaderBase.vue";
+import { useRoute } from 'vue-router';
+import { ref } from 'vue';
 
 export default {
   name: "PayView",
   components: {
     HeaderBase,
   },
+
+  setup() {
+    const route = useRoute();
+    const order = JSON.parse(route.query.order_json);
+    const item = JSON.parse(order["items"]);
+    const store_name = order["storeName"];
+    const total_price = order["totalPrice"];
+    const items = ref([]);
+    const is_show_detail = ref(false);
+    const is_wechat_pay = ref(false);
+
+    Object.keys(item).forEach(key => {
+      const index = key.lastIndexOf("@");
+      const id = key.slice(index + 1);
+      const name = key.slice(0, index);
+      items.value.push({
+        id: id,
+        name: name,
+        price: item[key],
+      })
+    });
+    items.value.sort((a, b) => a.id.localeCompare(b.id));
+
+    return {
+      store_name,
+      total_price,
+      items,
+      is_show_detail,
+      is_wechat_pay,
+    }
+  }
 }
 </script>
 
@@ -108,12 +150,25 @@ h3 {
   color: #666;
 }
 
-
 .payment-type {
   width: 100%;
 
-  margin: 0;
+  margin: 2vw 0 0 0;
   padding: 0;
+}
+
+.payment-info {
+  display: flex;
+  align-items: center;
+  gap: 3vw;
+}
+
+.payment-text {
+  font-size: 4vw;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: #333;
+
+  margin-left: 2vw;
 }
 
 .payment-type li {
@@ -124,6 +179,8 @@ h3 {
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+  cursor: pointer;
 }
 
 .payment-type li img {
