@@ -149,7 +149,7 @@ import { showInfoToUser } from '@/utils/notice';
 import { getDistance } from 'geolib';
 import store from '@/store';
 import router from '@/router';
-import { watch, ref } from 'vue';
+import { ref } from 'vue';
 import $ from 'jquery';
 
 
@@ -195,48 +195,54 @@ export default {
     };
 
     // 获取所有商家信息
-    watch(
-      () => store.state.access_token,
-      (new_token, old_token) => {
-        if (new_token && old_token === null) {
-          $.ajax({
-            url: 'https://data.zxylearn.top/getAllEleBusiness',
-            type: 'GET',
-            headers: {
-              'Authorization': `Bearer ${store.state.access_token}`
-            },
-            success: (data) => {
-              if (data === "" || data === null) {
-                return;
-              }
-              businesses.value = [];
-              data.forEach(business => {
-                const distance = (getDistance(
-                  { longitude: store.state.longitude, latitude: store.state.latitude },
-                  { longitude: business.location.x, latitude: business.location.y }
-                ) / 1000).toFixed(2);
-                const duration = Math.round(parseFloat(distance) / 0.50);
+    const getAllEleBusinessInfo = () => {
+      $.ajax({
+        url: 'https://data.zxylearn.top/getAllEleBusiness',
+        type: 'GET',
+        headers: {
+          'Authorization': `Bearer ${store.state.access_token}`
+        },
+        success: (data) => {
+          if (data === "" || data === null) {
+            return;
+          }
+          businesses.value = [];
+          data.forEach(business => {
+            const distance = (getDistance(
+              { longitude: store.state.longitude, latitude: store.state.latitude },
+              { longitude: business.location.x, latitude: business.location.y }
+            ) / 1000).toFixed(2);
+            const duration = Math.round(parseFloat(distance) / 0.50);
 
-                businesses.value.push({
-                  id: business.id,
-                  store_name: business.storeName,
-                  store_description: business.storeDescription,
-                  store_cover: business.storeCover || 'https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/DefaultStoreCover.png',
-                  store_volume: business.storeVolume,
-                  store_items: business.storeItems,
-                  distance: distance,
-                  duration: duration
-                })
-              });
-            },
-            error: (error) => {
-              console.error('failed to get business info:', error);
-            }
+            businesses.value.push({
+              id: business.id,
+              store_name: business.storeName,
+              store_description: business.storeDescription,
+              store_cover: business.storeCover || 'https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/DefaultStoreCover.png',
+              store_volume: business.storeVolume,
+              store_items: business.storeItems,
+              distance: distance,
+              duration: duration
+            })
           });
+        },
+        error: (error) => {
+          console.error('failed to get business info:', error);
         }
-      },
-      { immediate: true }
-    );
+      });
+    };
+
+    if (store.state.access_token === null || store.state.access_token === '') {
+      setTimeout(() => {
+        if (store.state.access_token !== null && store.state.access_token !== '') {
+          getAllEleBusinessInfo();
+        } else {
+          console.log("failed to get business info: timeout");
+        }
+      }, 1000);
+    } else {
+      getAllEleBusinessInfo();
+    }
 
     // 向后端服务器发起搜索请求
     const searchFunction = () => {
@@ -254,6 +260,7 @@ export default {
           }
 
           showInfoToUser("查询成功", "success");
+
           // 更新数据前清空数组
           businesses.value = [];
           data.forEach(business => {
