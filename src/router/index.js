@@ -13,8 +13,6 @@ import PayView from '@/views/PayView.vue';
 import ConfirmOrderView from '@/views/ConfirmOrderView.vue';
 
 
-import TestView from '../views/TestView.vue';
-
 const routes = [
 
   {
@@ -77,19 +75,6 @@ const routes = [
     component: ChatView,
     meta: { requiresAuth: true }
   },
-
-
-
-
-
-  {
-    path: '/test',
-    name: 'test',
-    component: TestView,
-    meta: { requiresAuth: false }
-  }
-
-
 ]
 
 const router = createRouter({
@@ -113,7 +98,7 @@ router.beforeEach((to, from, next) => {
     }
   }
 
-  
+
   if (from.name === 'chat') {
     store.dispatch("updateIsChat", -1);
     console.log("level chat");

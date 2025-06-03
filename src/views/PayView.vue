@@ -90,10 +90,10 @@ export default {
     });
     items.value.sort((a, b) => a.id.localeCompare(b.id));
 
-
+    // 处理支付
     const goToPay = () => {
       $.ajax({
-        url: 'http://localhost:12345/submitPayOrder?orderId=' + order_id,
+        url: 'https://data.zxylearn.top/submitPayOrder?orderId=' + order_id,
         type: 'POST',
         headers: {
           'Authorization': `Bearer ${store.state.access_token}`

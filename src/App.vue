@@ -23,7 +23,7 @@ export default {
     console.log("refresh_token in localStorage: ", refresh_token);
     if (refresh_token !== null && !store.state.is_login) {
       $.ajax({
-        url: 'http://localhost:12345/loginByRefreshToken',
+        url: 'https://data.zxylearn.top/loginByRefreshToken',
         type: 'POST',
         headers: {
           'Authorization': `Bearer ${refresh_token}`

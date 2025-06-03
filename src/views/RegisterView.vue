@@ -15,7 +15,7 @@
     </el-form-item>
     <el-form-item class="input-form" label="验证码:">
       <div class="captcha-content">
-        <el-input v-model="captcha_email_text" show-password placeholder="请输入邮箱验证码..."></el-input>
+        <el-input v-model="captcha_email_text" placeholder="请输入邮箱验证码..."></el-input>
         <el-button class="captcha-btn" type="primary" @click="getCaptchaEmail" :disabled="disable_btn_countdown > 0">
           {{ disable_btn_countdown > 0 ? disable_btn_countdown + '秒后重试' : '获取验证码' }}
         </el-button>
@@ -65,7 +65,7 @@ export default {
       }
 
       $.ajax({
-        url: 'http://localhost:12345/captchaEmail?email=' + encodeURIComponent(email.value),
+        url: 'https://data.zxylearn.top/captchaEmail?email=' + encodeURIComponent(email.value),
         type: 'GET',
         dataType: 'json',
         complete: function (xhr) {
@@ -108,7 +108,6 @@ export default {
       });
     };
 
-
     // 合法密码的正则表达式
     const isValidPassword = (str) => /^[A-Za-z0-9]{1,20}$/.test(str);
 
@@ -136,7 +135,7 @@ export default {
         };
 
         $.ajax({
-          url: 'http://localhost:12345/register',
+          url: 'https://data.zxylearn.top/register',
           type: 'POST',
           contentType: 'application/json',
           data: JSON.stringify(register_data),
@@ -186,7 +185,6 @@ export default {
       }
 
       disable_btn_countdown.value = wait_time;
-
       countdownTimer = setInterval(() => {
         disable_btn_countdown.value--;
 
@@ -195,15 +193,7 @@ export default {
           countdownTimer = null;
         }
       }, 1000);
-
     };
-
-
-
-
-
-
-
 
 
     return {

@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import { ref, nextTick, computed } from 'vue';
+import { ref, nextTick, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import HeaderBase from '@/components/HeaderBase.vue';
 import { ElInput, ElButton } from 'element-plus';
@@ -91,7 +91,7 @@ export default {
 
     // 请求获取对方头像
     $.ajax({
-      url: 'http://localhost:12345/getOtherAvatar?id=' + other_id,
+      url: 'https://data.zxylearn.top/getOtherAvatar?id=' + other_id,
       type: 'GET',
       headers: {
         'Authorization': `Bearer ${store.state.access_token}`
@@ -109,22 +109,26 @@ export default {
       }
     });
 
+    // 重新加载组件需要设置onmessage刷新来messages
     if (socket.value === null) {
       store.dispatch("createWebsocket");
     }
+    watch(
+      () => socket.value,
+      (new_socket) => {
+        if (new_socket !== null) {
+          new_socket.onmessage = function (event) {
+            const message = JSON.parse(event.data);
+            addMessage(message);
+            store.dispatch("addMsgCount", message.senderId);
+          };
+          store.dispatch("updateSocket", new_socket);
+        }
+      },
+      { immediate: true }
+    );
 
-    // 重新加载组件需要设置onmessage刷新来messages
-    setTimeout(() => {
-      if (socket.value !== null) {
-        socket.value.onmessage = function (event) {
-          const message = JSON.parse(event.data);
-          addMessage(message);
-          store.dispatch("addMsgCount", message.senderId);
-        };
-        store.dispatch("updateSocket", socket);
-      }
-    }, 100);
-
+    // 处理消息发送
     const handleSend = () => {
       if (!input.value.trim()) return;
       if (String(self_id) === String(other_id)) {
@@ -163,11 +167,10 @@ export default {
       input.value = '';
     };
 
-
     // 获取历史聊天记录
     if (String(self_id) !== String(other_id)) {
       $.ajax({
-        url: 'http://localhost:12345/getChatMessage?id1=' + self_id + '&id2=' + other_id,
+        url: 'https://data.zxylearn.top/getChatMessage?id1=' + self_id + '&id2=' + other_id,
         type: 'GET',
         headers: {
           'Authorization': `Bearer ${store.state.access_token}`
@@ -189,7 +192,6 @@ export default {
         }
       });
     }
-
 
     return {
       other_id,

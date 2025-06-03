@@ -4,27 +4,30 @@ import $ from 'jquery';
 export default createStore({
   state: {
     id: -1,
-    email: "",
+    email: null,
     avatar: "https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/DefaultAvatar.png",
 
-    refresh_token: "",
-    access_token: "",
+    refresh_token: null,
+    access_token: null,
     tokenInterval: null,
 
-    longitude: -999,
-    latitude: -999,
+    longitude: 102.850549,
+    latitude: 24.826936,
     location_text: "云南大学软件学院",
-
-    is_login: false,
 
     socket: null,
     is_chat: -1,
     msg_count: new Map(),
+
+    is_login: false,
   },
   getters: {
   },
-  mutations: {
 
+  ///////////////////////////////////////////////////
+  /// 同步操作
+  ///////////////////////////////////////////////////
+  mutations: {
     updateUser(state, user) {
       state.id = user.id;
       state.email = user.email;
@@ -63,17 +66,16 @@ export default createStore({
     },
 
     updateSocket(state, socket) {
-      state.socket = socket;
+      if (socket && socket instanceof WebSocket) {
+        state.socket = socket;
+      } else {
+        console.warn("invalid socket: ", socket);
+        state.socket = null;
+      }
     },
 
     updateIsChat(state, is_chat) {
       state.is_chat = is_chat;
-    },
-
-    clearMsgCount(state, key) {
-      const map = new Map(state.msg_count);
-      map.set(key, 0);
-      state.msg_count = map;
     },
 
     addMsgCount(state, key) {
@@ -86,25 +88,35 @@ export default createStore({
       state.msg_count = map;
     },
 
+    clearMsgCount(state, key) {
+      const map = new Map(state.msg_count);
+      map.set(key, 0);
+      state.msg_count = map;
+    },
+
     logout(state) {
       state.id = -1;
-      state.email = "";
-      state.refresh_token = "";
-      state.access_token = "";
+      state.email = null;
+      state.refresh_token = null;
+      state.access_token = null;
       state.is_login = false;
       state.tokenInterval = null;
     },
-
   },
+  ///////////////////////////////////////////////////
+  /// 同步+异步操作
+  ///////////////////////////////////////////////////
   actions: {
 
+    ///////////////////////////////////////////////////
+    /// 登录
+    ///////////////////////////////////////////////////
     login(context, user) {
       context.commit("updateUser", user);
 
       const refreshToken = () => {
-
         $.ajax({
-          url: 'http://localhost:12345/getAccessToken',
+          url: 'https://data.zxylearn.top/getAccessToken',
           type: 'POST',
           headers: {
             'Authorization': `Bearer ${context.state.refresh_token}`
@@ -115,6 +127,12 @@ export default createStore({
                 const access_token = xhr.responseJSON.accessToken;
                 context.commit("updateAccessToken", access_token);
                 console.log("access_token:", access_token);
+
+                // 如果websocket连接断开了,重新建立连接
+                if (context.state.socket === null) {
+                  context.dispatch('createWebsocket');
+                }
+
                 break;
               }
               case 401: {
@@ -139,13 +157,11 @@ export default createStore({
             }
           }
         });
-
       };
 
       refreshToken();
-      setTimeout(() => {
-        context.dispatch('createWebsocket');
-      }, 1000);
+
+      // 每280s刷新一次短期Jwt令牌
       const tokenInterval = setInterval(() => {
         refreshToken();
       }, 280 * 1000);
@@ -153,11 +169,14 @@ export default createStore({
       context.commit("updateTokenInterval", tokenInterval);
     },
 
+    ///////////////////////////////////////////////////
+    /// 退出登录
+    ///////////////////////////////////////////////////
     logout(context, isTokenBlack) {
-
+      // 记录Jwt令牌黑名单
       if (isTokenBlack) {
         $.ajax({
-          url: 'http://localhost:12345/logout',
+          url: 'https://data.zxylearn.top/logout',
           type: 'POST',
           headers: {
             'Authorization': `Bearer ${context.state.refresh_token}`
@@ -201,7 +220,6 @@ export default createStore({
       }
 
       context.commit("logout");
-
     },
 
     updateAvatar(context, avatar) {
@@ -220,18 +238,20 @@ export default createStore({
       context.commit("updateIsChat", is_chat);
     },
 
-    clearMsgCount(context, key) {
-      context.commit("clearMsgCount", key);
-    },
-
     addMsgCount(context, key) {
       context.commit("addMsgCount", key);
     },
 
+    clearMsgCount(context, key) {
+      context.commit("clearMsgCount", key);
+    },
+
+    ///////////////////////////////////////////////////
+    /// 建立websocket连接
+    ///////////////////////////////////////////////////
     createWebsocket(context) {
       $(document).ready(function () {
-
-        const _socket = new WebSocket(`ws://localhost:12345/chat?token=${context.state.access_token}`);
+        const _socket = new WebSocket(`wss://data.zxylearn.top/chat?token=${context.state.access_token}`);
         _socket.onopen = function () {
           console.log("websocket connect");
           context.commit("updateSocket", _socket);
@@ -256,16 +276,10 @@ export default createStore({
             context.commit("updateSocket", null);
           }
         };
-
       });
     }
-
-
-
   },
   modules: {
 
   }
-
-
 })

@@ -59,8 +59,6 @@
         </el-button>
       </div>
     </div>
-
-
   </div>
 </template>
 
@@ -82,7 +80,6 @@ import {
 
 export default {
   name: "MineView",
-
   components: {
     HeaderBase,
     Camera,
@@ -96,8 +93,10 @@ export default {
     const avatar = computed(() => store.state.avatar);
     const location = computed(() => store.state.location_text);
     const volume = ref(0);
+
+    // 获取店铺销量
     $.ajax({
-      url: 'http://localhost:12345/getMyStoreVolume',
+      url: 'https://data.zxylearn.top/getMyStoreVolume',
       type: 'GET',
       headers: {
         'Authorization': `Bearer ${store.state.access_token}`
@@ -113,6 +112,7 @@ export default {
       }
     });
 
+    // 更换头像
     const changeAvatar = () => {
       const input = document.createElement('input');
       input.type = 'file';
@@ -131,7 +131,7 @@ export default {
         formData.append('file', file);
 
         $.ajax({
-          url: 'http://localhost:12345/updateAvatar',
+          url: 'https://data.zxylearn.top/updateAvatar',
           type: 'POST',
           headers: {
             'Authorization': `Bearer ${store.state.access_token}`
@@ -160,7 +160,7 @@ export default {
       document.body.removeChild(input);
     };
 
-
+    // 更换位置
     const changeLocation = () => {
       ElMessageBox.prompt('请输入您的位置', '位置设置', {
         confirmButtonText: '定位',
@@ -169,7 +169,7 @@ export default {
         inputErrorMessage: '请输入有效位置信息',
       }).then(({ value }) => {
         $.ajax({
-          url: 'http://localhost:12345/getPosition?address=' + value.trim(),
+          url: 'https://data.zxylearn.top/getPosition?address=' + value.trim(),
           type: 'GET',
           headers: {
             'Authorization': `Bearer ${store.state.access_token}`
@@ -196,7 +196,6 @@ export default {
         .catch(() => {
           console.log("location change cancelled");
         });
-
     };
 
     const goToMyStore = () => {

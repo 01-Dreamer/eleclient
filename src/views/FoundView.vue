@@ -37,14 +37,15 @@ export default {
   },
 
   setup() {
+    const businesses = ref([]);
     const msg_count = computed(() => store.state.msg_count);
     const getMsgCount = (id) => {
-      return msg_count.value.get(id) || 0;
+      return msg_count.value.get(parseInt(id)) || 0;
     };
 
-    const businesses = ref([]);
+    // 获取所有商家信息
     $.ajax({
-      url: 'http://localhost:12345/getAllEleBusiness',
+      url: 'https://data.zxylearn.top/getAllEleBusiness',
       type: 'GET',
       headers: {
         'Authorization': `Bearer ${store.state.access_token}`
@@ -53,6 +54,7 @@ export default {
         if (data === "" || data === null) {
           return;
         }
+        businesses.value = [];
         data.forEach(business => {
           businesses.value.push({
             id: business.id,
@@ -67,10 +69,9 @@ export default {
       }
     });
 
-
-
+    // 处理点击商家事件
     const clickBusiness = (id) => {
-      store.dispatch("clearMsgCount", id);
+      store.dispatch("clearMsgCount", parseInt(id));
       router.push({
         name: "business",
         params: {
@@ -79,7 +80,7 @@ export default {
       })
     };
 
-
+    
     return {
       businesses,
 

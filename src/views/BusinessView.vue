@@ -203,7 +203,7 @@ export default {
       const cover_json = JSON.stringify(obj2);
 
       $.ajax({
-        url: 'http://localhost:12345/createOrder?id=' + other_id,
+        url: 'https://data.zxylearn.top/createOrder?id=' + other_id,
         type: 'POST',
         headers: {
           'Authorization': `Bearer ${store.state.access_token}`
@@ -235,7 +235,7 @@ export default {
     /// 获取商家信息
     ///////////////////////////////////////////////////
     $.ajax({
-      url: 'http://localhost:12345/getOneEleBusiness?id=' + other_id,
+      url: 'https://data.zxylearn.top/getOneEleBusiness?id=' + other_id,
       type: 'GET',
       headers: {
         'Authorization': `Bearer ${store.state.access_token}`
@@ -262,7 +262,7 @@ export default {
 
         // 计算距离和时间
         if (self_id == other_id) return;
-        const request_url = 'http://localhost:12345/getDistance?' +
+        const request_url = 'https://data.zxylearn.top/getDistance?' +
           'longitude1=' + store.state.longitude +
           '&latitude1=' + store.state.latitude +
           '&longitude2=' + data.location.x +
@@ -312,7 +312,7 @@ export default {
         const formData = new FormData();
         formData.append('file', file);
         $.ajax({
-          url: 'http://localhost:12345/updateStoreCover',
+          url: 'https://data.zxylearn.top/updateStoreCover',
           type: 'POST',
           headers: {
             'Authorization': `Bearer ${store.state.access_token}`
@@ -384,7 +384,7 @@ export default {
             }
 
             $.ajax({
-              url: 'http://localhost:12345/updateStoreText?storeName=' + name + '&storeDescription=' + description,
+              url: 'https://data.zxylearn.top/updateStoreText?storeName=' + name + '&storeDescription=' + description,
               type: 'POST',
               headers: {
                 'Authorization': `Bearer ${store.state.access_token}`
@@ -435,7 +435,7 @@ export default {
         const formData = new FormData();
         formData.append('file', file);
         $.ajax({
-          url: 'http://localhost:12345/updateStoreItemCover?itemId=' + item_id,
+          url: 'https://data.zxylearn.top/updateStoreItemCover?itemId=' + item_id,
           type: 'POST',
           headers: {
             'Authorization': `Bearer ${store.state.access_token}`
@@ -517,7 +517,7 @@ export default {
               return false;
             }
 
-            const request_url = 'http://localhost:12345/updateStoreItemText?' +
+            const request_url = 'https://data.zxylearn.top/updateStoreItemText?' +
               'itemId=' + item_id +
               '&itemName=' + name +
               '&itemDescription=' + description +
@@ -556,7 +556,7 @@ export default {
     ///////////////////////////////////////////////////
     const addItem = () => {
       $.ajax({
-        url: 'http://localhost:12345/addStoreItem',
+        url: 'https://data.zxylearn.top/addStoreItem',
         type: 'POST',
         headers: {
           'Authorization': `Bearer ${store.state.access_token}`
@@ -600,7 +600,7 @@ export default {
       )
         .then(() => {
           $.ajax({
-            url: 'http://localhost:12345/delStoreItem?itemId=' + item_id,
+            url: 'https://data.zxylearn.top/delStoreItem?itemId=' + item_id,
             type: 'DELETE',
             headers: {
               'Authorization': `Bearer ${store.state.access_token}`

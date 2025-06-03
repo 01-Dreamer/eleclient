@@ -45,19 +45,17 @@ export default {
   },
 
   setup() {
-
     const email = ref('');
     const password = ref('');
     const captcha_img_text = ref('');
     const captcha_img_url = ref('');
 
 
-
     // 向后端请求图形验证码
     let captcha_img_id = null;
     const getCaptchaImg = () => {
       $.ajax({
-        url: 'http://localhost:12345/captchaImg',
+        url: 'https://data.zxylearn.top/captchaImg',
         type: 'GET',
         xhrFields: {
           responseType: 'blob'
@@ -74,11 +72,9 @@ export default {
     };
 
     // 第一次进入登录页面自动请求图形验证码
-    setTimeout(() => {
-      if (!store.state.is_login) {
-        getCaptchaImg();
-      }
-    }, 100);
+    if (!store.state.is_login) {
+      getCaptchaImg();
+    }
 
     // 处理登录
     const handleLogin = () => {
@@ -98,7 +94,7 @@ export default {
         };
 
         $.ajax({
-          url: 'http://localhost:12345/login',
+          url: 'https://data.zxylearn.top/login',
           type: 'POST',
           contentType: 'application/json',
           data: JSON.stringify(login_data),
@@ -136,7 +132,6 @@ export default {
                 else {
                   console.error("unknown_error:", xhr.responseText);
                 }
-                console.log("unauthorized");
                 break;
               }
               case 0: {

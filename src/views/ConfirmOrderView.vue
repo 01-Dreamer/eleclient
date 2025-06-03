@@ -83,7 +83,6 @@ export default {
     });
     items.value.sort((a, b) => a.id.localeCompare(b.id));
 
-
     const goToPay = () => {
       router.push({
         name: "pay",

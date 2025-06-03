@@ -138,8 +138,6 @@
       </div>
     </li>
   </ul>
-
-
 </template>
 
 
@@ -167,19 +165,42 @@ export default {
 
 
   setup() {
+    const search_input = ref('');
+    const businesses = ref([]);
     const location = ref(store.state.location_text);
     const is_loading = ref(false);
 
-    const businesses = ref([]);
+    // 处理点击商家事件
+    const clickBusiness = (id) => {
+      store.dispatch("clearMsgCount", id);
+      router.push({
+        name: "business",
+        params: {
+          id
+        }
+      })
+    };
 
+    // 排序前端直接处理
+    const handleSort = (type) => {
+      if (type === "default") {
+        businesses.value.sort((a, b) => a.id - b.id);
+      } else if (type === "distance") {
+        businesses.value.sort((a, b) => a.distance - b.distance);
+      } else if (type === "sales") {
+        businesses.value.sort((a, b) => b.store_volume - a.store_volume);
+      } else {
+        console.error("sort error");
+      }
+    };
 
-    // 请求商家信息
+    // 获取所有商家信息
     watch(
       () => store.state.access_token,
-      (token) => {
-        if (token) {
+      (new_token, old_token) => {
+        if (new_token && old_token === null) {
           $.ajax({
-            url: 'http://localhost:12345/getAllEleBusiness',
+            url: 'https://data.zxylearn.top/getAllEleBusiness',
             type: 'GET',
             headers: {
               'Authorization': `Bearer ${store.state.access_token}`
@@ -188,8 +209,8 @@ export default {
               if (data === "" || data === null) {
                 return;
               }
+              businesses.value = [];
               data.forEach(business => {
-
                 const distance = (getDistance(
                   { longitude: store.state.longitude, latitude: store.state.latitude },
                   { longitude: business.location.x, latitude: business.location.y }
@@ -217,30 +238,12 @@ export default {
       { immediate: true }
     );
 
-
-
-
-    const clickBusiness = (id) => {
-      store.dispatch("clearMsgCount", id);
-      router.push({
-        name: "business",
-        params: {
-          id
-        }
-      })
-    };
-
-
-    const search_input = ref('');
+    // 向后端服务器发起搜索请求
     const searchFunction = () => {
       if (search_input.value.trim() === '') return;
 
-
-
-
-
       $.ajax({
-        url: 'http://localhost:12345/getEleBusinessByWord?keyword=' + search_input.value.trim(),
+        url: 'https://data.zxylearn.top/getEleBusinessByWord?keyword=' + search_input.value.trim(),
         type: 'GET',
         headers: {
           'Authorization': `Bearer ${store.state.access_token}`
@@ -251,7 +254,8 @@ export default {
           }
 
           showInfoToUser("查询成功", "success");
-          businesses.value = []; // 清空数组
+          // 更新数据前清空数组
+          businesses.value = [];
           data.forEach(business => {
 
             const distance = (getDistance(
@@ -277,38 +281,27 @@ export default {
         }
       });
 
-
-
-
-
-
-
-
       search_input.value = '';
     };
 
-    const handleSort = (type) => {
-      if (type === "default") {
-        businesses.value.sort((a, b) => a.id - b.id);
-      } else if (type === "distance") {
-        businesses.value.sort((a, b) => a.distance - b.distance);
-      } else if (type === "sales") {
-        businesses.value.sort((a, b) => b.store_volume - a.store_volume);
-      } else {
-        console.error("sort error");
-      }
-    };
-
-
+    // 获取用户位置
     const getPosition = () => {
       is_loading.value = true;
+
+      // 定位前检查
+      if (!navigator.geolocation) {
+        showInfoToUser("浏览器不支持定位", "error");
+        is_loading.value = false;
+        return;
+      }
+
       navigator.geolocation.getCurrentPosition(
         (position) => {
           console.log("longitude:", position.coords.longitude);
           console.log("latitude:", position.coords.latitude);
 
           $.ajax({
-            url: 'http://localhost:12345/getFormattedAddress',
+            url: 'https://data.zxylearn.top/getFormattedAddress',
             type: 'GET',
             headers: {
               'Authorization': `Bearer ${store.state.access_token}`
@@ -340,7 +333,6 @@ export default {
               is_loading.value = false;
             },
           });
-
         },
         (error) => {
           showInfoToUser("获取位置失败", "error");

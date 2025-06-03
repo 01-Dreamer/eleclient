@@ -84,8 +84,9 @@ export default {
     const unpair_orders = ref([]);
     const pair_orders = ref([]);
 
+    // 获取我的所有订单信息
     $.ajax({
-      url: 'http://localhost:12345/getMyPayOrder',
+      url: 'https://data.zxylearn.top/getMyPayOrder',
       type: 'GET',
       headers: {
         'Authorization': `Bearer ${store.state.access_token}`
@@ -128,7 +129,6 @@ export default {
                 items: items
               });
             }
-
           });
         }
       },
@@ -155,8 +155,6 @@ export default {
 
       goToPay
     }
-
-
   }
 }
 </script>
