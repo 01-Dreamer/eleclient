@@ -232,9 +232,9 @@ export default {
       });
     };
 
-    if (store.state.access_token === null || store.state.access_token === '') {
+    if (store.state.access_token === null || store.state.access_token === '' || store.state.access_token === undefined) {
       setTimeout(() => {
-        if (store.state.access_token !== null && store.state.access_token !== '') {
+        if (store.state.access_token !== null && store.state.access_token !== '' && store.state.access_token !== undefined) {
           getAllEleBusinessInfo();
         } else {
           console.log("failed to get business info: timeout");

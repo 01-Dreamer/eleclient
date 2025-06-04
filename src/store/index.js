@@ -97,6 +97,7 @@ export default createStore({
     logout(state) {
       state.id = -1;
       state.email = null;
+      state.avatar = "https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/DefaultAvatar.png";
       state.refresh_token = null;
       state.access_token = null;
       state.is_login = false;
