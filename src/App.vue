@@ -1,8 +1,6 @@
 <template>
-  <div class="wrapper">
-    <router-view />
-    <NavBar class="footer" />
-  </div>
+  <router-view />
+  <NavBar class="footer" />
 </template>
 
 
@@ -70,13 +68,17 @@ export default {
 
 </script>
 
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow-x: hidden;
+}
+</style>
 
 <style scoped>
-.wrapper {
-  width: 100%;
-  height: 100%;
-}
-
 .footer {
   position: fixed;
   left: 0;
@@ -85,3 +87,4 @@ export default {
   z-index: 2000;
 }
 </style>
+

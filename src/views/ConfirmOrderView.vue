@@ -51,7 +51,7 @@ import store from '@/store';
 
 
 export default {
-  name: "ConfirmPayView",
+  name: "ConfirmOrderView",
   components: {
     HeaderBase,
   },

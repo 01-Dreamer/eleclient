@@ -1,24 +1,24 @@
 <template>
     <ul class="nav">
-        <router-link class="link" :to="{ name: 'home' }">
+        <router-link class="link" :to="{ name: 'home' }" active-class="active">
             <li>
                 <i class="fa fa-home"></i>
                 <span>首页</span>
             </li>
         </router-link>
-        <router-link class="link" :to="{ name: 'found' }">
+        <router-link class="link" :to="{ name: 'found' }" active-class="active">
             <li>
                 <i class="fa fa-compass"></i>
                 <span>发现</span>
             </li>
         </router-link>
-        <router-link class="link" :to="{ name: 'order' }">
+        <router-link class="link" :to="{ name: 'order' }" active-class="active">
             <li>
                 <i class="fa fa-file-text-o"></i>
                 <span>订单</span>
             </li>
         </router-link>
-        <router-link class="link" :to="{ name: 'mine' }">
+        <router-link class="link" :to="{ name: 'mine' }" active-class="active">
             <li>
                 <i class="fa fa-user-o"></i>
                 <span>我的</span>
@@ -72,5 +72,9 @@ export default {
 .nav .link li span {
     font-size: 2.8vw;
     margin-top: 0.5vw;
+}
+
+.nav .link.active li {
+    color: #0097FF;
 }
 </style>

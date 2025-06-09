@@ -243,11 +243,12 @@ export default {
   display: flex;
   flex-direction: column;
 
-  font-family: Arial, sans-serif;
-  padding: 4vw;
-  margin-top: 14vw;
-  height: 78vh;
+  height: 83vh;
   background: linear-gradient(45deg, #F06, #FF8);
+  font-family: Arial, sans-serif;
+
+  padding: 4vw;
+  margin-top: 12vw;
 }
 
 .mine-info-item {

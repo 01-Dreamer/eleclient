@@ -2,7 +2,6 @@
   <HeaderBase>
     用户登录
   </HeaderBase>
-
   <div class="login-input">
     <el-form-item class="input-form" label="邮箱:">
       <el-input v-model="email" placeholder="请输入邮箱..."></el-input>
@@ -24,7 +23,6 @@
       <el-button class="register-btn">去注册</el-button>
     </router-link>
   </div>
-
 </template>
 
 
@@ -171,7 +169,7 @@ export default {
 
 <style scoped>
 .login-input {
-  margin-top: 14vw;
+  margin: 14vw 2vw auto 2vw;
 }
 
 .login-input .input-form {
@@ -199,7 +197,7 @@ export default {
   display: flex;
   flex-direction: column;
 
-  width: 100%;
+  margin: auto 2vw;
 }
 
 .button-group .login-btn {

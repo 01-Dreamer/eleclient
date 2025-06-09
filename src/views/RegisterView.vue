@@ -3,7 +3,7 @@
     用户注册
   </HeaderBase>
 
-  <div class="login-input">
+  <div class="register-input">
     <el-form-item class="input-form" label="邮箱:">
       <el-input v-model="email" placeholder="请输入邮箱..."></el-input>
     </el-form-item>
@@ -213,15 +213,15 @@ export default {
 
 
 <style scoped>
-.login-input {
-  margin-top: 14vw;
+.register-input {
+  margin: 14vw 2vw auto 2vw;
 }
 
-.login-input .input-form {
+.register-input .input-form {
   height: 8vw;
 }
 
-.login-input .input-form .captcha-content {
+.register-input .input-form .captcha-content {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -230,11 +230,11 @@ export default {
   height: 100%;
 }
 
-.login-input .input-form .captcha-content .captcha-text {
+.register-input .input-form .captcha-content .captcha-text {
   width: 60%;
 }
 
-.login-input .input-form .captcha-content .captcha-btn {
+.register-input .input-form .captcha-content .captcha-btn {
   width: 40%;
   cursor: pointer;
   margin-left: 1vw;
@@ -244,7 +244,7 @@ export default {
   display: flex;
   flex-direction: column;
 
-  width: 100%;
+  margin: auto 2vw;
 }
 
 .button-group .register-btn {

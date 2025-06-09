@@ -169,6 +169,7 @@ export default {
     const businesses = ref([]);
     const location = ref(store.state.location_text);
     const is_loading = ref(false);
+    
 
     // 处理点击商家事件
     const clickBusiness = (id) => {
