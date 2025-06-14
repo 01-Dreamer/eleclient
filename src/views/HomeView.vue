@@ -1,19 +1,20 @@
 <template>
-  <header>
-    <el-icon class="location-icon" @click="is_loading ? null : getPosition()">
-      <Loading v-if="is_loading" />
-      <Location v-else />
-    </el-icon>
-    <div class="location-text">
-      {{ location }}
-      <i class="fa fa-caret-down"></i>
-    </div>
-  </header>
-
-  <div class="search">
-    <div class="search-fixed-top">
-      <el-input v-model="search_input" @keyup.enter="searchFunction" style="width: 90%;" :prefix-icon="Search"
-        placeholder="搜索饿了么商家、商品名称" />
+  <div class="top-fixed">
+    <header>
+      <el-icon class="location-icon" @click="is_loading ? null : getPosition()">
+        <Loading v-if="is_loading" />
+        <Location v-else />
+      </el-icon>
+      <div class="location-text">
+        {{ location }}
+        <i class="fa fa-caret-down"></i>
+      </div>
+    </header>
+    <div class="search">
+      <div class="search-fixed-top">
+        <el-input v-model="search_input" @keyup.enter="searchFunction" style="width: 90%;" :prefix-icon="Search"
+          placeholder="搜索饿了么商家、商品名称" />
+      </div>
     </div>
   </div>
 
@@ -169,7 +170,7 @@ export default {
     const businesses = ref([]);
     const location = ref(store.state.location_text);
     const is_loading = ref(false);
-    
+
 
     // 处理点击商家事件
     const clickBusiness = (id) => {
@@ -370,6 +371,13 @@ export default {
 
 
 <style scoped>
+.top-fixed {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: white;
+}
+
 header {
   width: 100%;
   height: 8vw;

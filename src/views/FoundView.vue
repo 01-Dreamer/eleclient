@@ -42,6 +42,7 @@ export default {
     const getMsgCount = (id) => {
       return msg_count.value.get(parseInt(id)) || 0;
     };
+    
 
     // 获取所有商家信息
     $.ajax({
