@@ -29,8 +29,22 @@
       <el-icon class="sales-icon">
         <Shop />
       </el-icon>
-      <div class="sales-text">
+      <div class="volume-review-text">
         <span>店铺销量：<strong>{{ volume }}</strong> 单</span>
+      </div>
+    </div>
+
+    <div class="mine-info-item">
+      <el-icon class="sales-icon">
+        <StarFilled />
+      </el-icon>
+      <div class="volume-review-text">
+        <span>店铺评价：<i v-for="i in 5" :key="i" :class="i <= Math.floor(review)
+          ? 'fa fa-star'
+          : (i - 0.5 <= review
+            ? 'fa fa-star-half-o'
+            : 'fa fa-star-o')">
+          </i>&nbsp;{{ review.toFixed(1) }}</span>
       </div>
     </div>
 
@@ -74,6 +88,7 @@ import {
   Camera,
   Location,
   Shop,
+  StarFilled,
   RefreshRight,
   SwitchButton
 } from '@element-plus/icons-vue';
@@ -85,6 +100,7 @@ export default {
     Camera,
     Location,
     Shop,
+    StarFilled,
     RefreshRight,
     SwitchButton
   },
@@ -93,19 +109,22 @@ export default {
     const avatar = computed(() => store.state.avatar);
     const location = computed(() => store.state.location_text);
     const volume = ref(0);
+    const review = ref(0.0);
 
-    // 获取店铺销量
+    // 获取店铺销量、评价
     $.ajax({
-      url: 'https://data.zxylearn.top/getMyStoreVolume',
+      url: 'https://data.zxylearn.top/getMyStoreVolumeReview',
       type: 'GET',
       headers: {
         'Authorization': `Bearer ${store.state.access_token}`
       },
       success: (data) => {
+        console.log(data);
         if (data === "" || data === null) {
           return;
         }
-        volume.value = data;
+        volume.value = data.storeVolume;
+        review.value = parseFloat(data.storeReview);
       },
       error: (error) => {
         console.error('failed to get my store volume:', error);
@@ -227,6 +246,7 @@ export default {
       avatar,
       location,
       volume,
+      review,
 
       changeAvatar,
       changeLocation,
@@ -294,9 +314,19 @@ export default {
   margin-left: 2vw;
 }
 
-.sales-text {
+.volume-review-text {
   font-size: 4vw;
   color: #333;
+}
+
+.volume-review-text span {
+  color: #666;
+  margin-left: 1vw;
+}
+
+.volume-review-text span i {
+  color: #FEC80E;
+  margin-right: 0.5vw;
 }
 
 .action-btn {

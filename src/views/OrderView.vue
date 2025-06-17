@@ -1,6 +1,6 @@
 <template>
   <HeaderBase>我的订单</HeaderBase>
-
+  
   <el-main class="order-container">
     <el-card class="order-section" v-if="unpair_orders.length">
       <template #header>
@@ -59,6 +59,10 @@
               <span class="item-name">配送费</span>
               <span class="item-price">¥3</span>
             </div>
+            <el-rate v-show="order.review == -1" v-model="review" :max="5" allow-half show-score
+              @click="goToReview(order.id)" score-template="{value} 分 未评价" class="unreview-text" />
+            <el-rate v-show="order.review != -1" :model-value="order.review / 2.0" :max="5" allow-half show-score
+              score-template="{value} 分 已评价" disabled class="review-text" />
           </div>
         </el-collapse-item>
       </el-collapse>
@@ -68,6 +72,7 @@
 
 <script>
 import HeaderBase from "@/components/HeaderBase.vue";
+import { showInfoToUser } from '@/utils/notice';
 import { ref } from 'vue';
 import store from '@/store';
 import router from '@/router';
@@ -83,6 +88,8 @@ export default {
   setup() {
     const unpair_orders = ref([]);
     const pair_orders = ref([]);
+    const review = ref(0);
+
 
     // 获取我的所有订单信息
     $.ajax({
@@ -94,7 +101,6 @@ export default {
       success: (data) => {
         if (data !== null && data !== '') {
           data.forEach(i => {
-
             const order = JSON.parse(i.orderInfo);
             const store_name = order["storeName"];
             const total_price = order["totalPrice"];
@@ -118,7 +124,8 @@ export default {
                 store_name: store_name,
                 total_price: total_price,
                 order_json: i.orderInfo,
-                items: items
+                items: items,
+                review: i.review
               });
             } else {
               unpair_orders.value.push({
@@ -133,11 +140,11 @@ export default {
         }
       },
       error: (error) => {
-        console.error("failed to my order: ", error);
+        console.error("failed to get my order: ", error);
       }
     });
 
-
+    // 去支付
     const goToPay = (order_json, order_id) => {
       router.push({
         name: "pay",
@@ -148,12 +155,42 @@ export default {
       })
     };
 
+    // 去评价
+    const goToReview = (order_id) => {
+      $.ajax({
+        url: 'https://data.zxylearn.top/submitReview?orderId=' + order_id + '&review=' + review.value * 2,
+        type: 'POST',
+        headers: {
+          'Authorization': `Bearer ${store.state.access_token}`
+        },
+        success: (data) => {
+          if (data !== null && data === true) {
+            const index = pair_orders.value.findIndex(order => order.id === order_id);
+            if (index !== -1) {
+              pair_orders.value[index].review = review.value * 2;
+              showInfoToUser("评价成功", "success");
+            }
+          } else {
+            showInfoToUser("评价失败", "error");
+          }
+          review.value = 0;
+        },
+        error: (error) => {
+          console.error("failed to submit review: ", error);
+          showInfoToUser("评价失败", "error");
+          review.value = 0;
+        }
+      });
+    };
+
 
     return {
       unpair_orders,
       pair_orders,
+      review,
 
-      goToPay
+      goToPay,
+      goToReview
     }
   }
 }
@@ -163,6 +200,7 @@ export default {
 .order-container {
   padding: 0;
   margin-top: 14vw;
+  padding-bottom: 14vw;
 }
 
 .order-section {
@@ -193,6 +231,14 @@ export default {
 
 .order-content {
   padding: 0 3vw;
+}
+
+.unreview-text :deep(.el-rate__text) {
+  color: var(--el-color-warning);
+}
+
+.review-text :deep(.el-rate__text) {
+  color: var(--el-color-success);
 }
 
 .order-item {

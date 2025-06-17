@@ -1,5 +1,5 @@
 <template>
-  <div class="top-fixed">
+  <div class="header-fixed-top">
     <header>
       <el-icon class="location-icon" @click="is_loading ? null : getPosition()">
         <Loading v-if="is_loading" />
@@ -85,10 +85,10 @@
   </div>
 
   <ul class="recommendtype">
-    <li @click="handleSort('default')">综合排序<i class="fa fa-caret-down"></i></li>
+    <li @click="handleSort('overall')">综合排序<i class="fa fa-caret-down"></i></li>
     <li @click="handleSort('distance')">距离最近</li>
     <li @click="handleSort('sales')">销量最高</li>
-    <li>筛选<i class="fa fa-filter"></i></li>
+    <li @click="handleSort('default')">筛选<i class="fa fa-filter"></i></li>
   </ul>
 
 
@@ -102,12 +102,13 @@
         </div>
         <div class="business-info-star">
           <div class="business-info-star-left">
-            <i class="fa fa-star"></i>
-            <i class="fa fa-star"></i>
-            <i class="fa fa-star"></i>
-            <i class="fa fa-star"></i>
-            <i class="fa fa-star"></i>
-            <span>4.9&nbsp;&nbsp;销量{{ business.store_volume }}单</span>
+            <i v-for="i in 5" :key="i" :class="i <= Math.floor(business.store_review)
+              ? 'fa fa-star'
+              : (i - 0.5 <= business.store_review
+                ? 'fa fa-star-half-o'
+                : 'fa fa-star-o')">
+            </i>
+            <span>{{ business.store_review.toFixed(1) }}&nbsp;&nbsp;销量{{ business.store_volume }}单</span>
           </div>
           <div class="business-info-star-right">
             蜂鸟专送
@@ -185,12 +186,14 @@ export default {
 
     // 排序前端直接处理
     const handleSort = (type) => {
-      if (type === "default") {
-        businesses.value.sort((a, b) => a.id - b.id);
+      if (type === "overall") {
+        businesses.value.sort((a, b) => b.store_review - a.store_review);
       } else if (type === "distance") {
         businesses.value.sort((a, b) => a.distance - b.distance);
       } else if (type === "sales") {
         businesses.value.sort((a, b) => b.store_volume - a.store_volume);
+      } else if(type === "default") {
+        businesses.value.sort((a, b) => a.id - b.id);
       } else {
         console.error("sort error");
       }
@@ -222,6 +225,7 @@ export default {
               store_description: business.storeDescription,
               store_cover: business.storeCover || 'https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/DefaultStoreCover.png',
               store_volume: business.storeVolume,
+              store_review: business.storeReview,
               store_items: business.storeItems,
               distance: distance,
               duration: duration
@@ -279,6 +283,7 @@ export default {
               store_description: business.storeDescription,
               store_cover: business.storeCover || 'https://zxydata.oss-cn-chengdu.aliyuncs.com/ele/DefaultStoreCover.png',
               store_volume: business.storeVolume,
+              store_review: business.storeReview,
               store_items: business.storeItems,
               distance: distance,
               duration: duration
@@ -371,7 +376,7 @@ export default {
 
 
 <style scoped>
-.top-fixed {
+.header-fixed-top {
   position: sticky;
   top: 0;
   z-index: 100;
@@ -477,6 +482,7 @@ header {
 .banner h3 {
   font-size: 4.2vw;
   margin-bottom: 1.2vw;
+  margin-top: 1vw;
 }
 
 .banner p {
@@ -641,7 +647,7 @@ header {
   align-items: center;
 }
 
-.business li .business-info .business-info-star .business-info-star-left .fa-star {
+.business li .business-info .business-info-star .business-info-star-left i {
   color: #FEC80E;
   margin-right: 0.5vw;
 }
